@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 import numpy as np
 
 # Load multi-stock data
-df = pd.read_csv("../sample_data/multi_stock.csv", index_col="Date", parse_dates=True)
+df = pd.read_csv("sample_data/multi_stock.csv", index_col="Date", parse_dates=True)
 returns = np.log(df / df.shift(1)).dropna()
 
 # Initialize Dash app
