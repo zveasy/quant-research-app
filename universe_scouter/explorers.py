@@ -5,18 +5,19 @@ class EquityExplorer:
     """
     Discovers tradable equity assets using the OpenBB Hub.
     """
-    def get_active_equities(self, limit: int = 250) -> pd.DataFrame:
+    def get_top_gainers(self, limit: int = 250) -> pd.DataFrame:
         """
-        Fetches a list of the most active US equities.
+        Fetches a list of the top-gaining US equities.
+        NOTE: The 'actives' function was deprecated, so we use 'gainers' instead.
         """
-        print(f"Fetching up to {limit} active equity symbols from OpenBB...")
+        print(f"Fetching up to {limit} top gainer equity symbols from OpenBB...")
         try:
-            # Fetches the most active stocks using the CORRECTED path
-            active_stocks = obb.equity.market.actives(limit=limit).to_df()
+            # CORRECTED: Use the .gainers() function which is available.
+            top_gainers = obb.equity.discovery.gainers(limit=limit).to_df()
             
-            if 'symbol' in active_stocks.columns and 'name' in active_stocks.columns:
-                print(f"Successfully fetched {len(active_stocks)} symbols.")
-                return active_stocks[['symbol', 'name']].head(limit)
+            if 'symbol' in top_gainers.columns and 'name' in top_gainers.columns:
+                print(f"Successfully fetched {len(top_gainers)} symbols.")
+                return top_gainers[['symbol', 'name']].head(limit)
             else:
                 print("Error: 'symbol' or 'name' column not found in the data.")
                 return pd.DataFrame()
@@ -28,6 +29,6 @@ class EquityExplorer:
 # Example of how to run it
 if __name__ == '__main__':
     explorer = EquityExplorer()
-    top_stocks = explorer.get_active_equities(limit=10)
-    print("\nTop 10 Most Active Stocks:")
+    top_stocks = explorer.get_top_gainers(limit=10)
+    print("\nTop 10 Top Gaining Stocks:")
     print(top_stocks)
