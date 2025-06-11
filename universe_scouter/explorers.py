@@ -11,14 +11,14 @@ class EquityExplorer:
         """
         print(f"Fetching up to {limit} active equity symbols from OpenBB...")
         try:
-            # Fetches the most active stocks
-            active_stocks = obb.equity.discovery.actives(limit=limit).to_df()
+            # Fetches the most active stocks using the CORRECTED path
+            active_stocks = obb.equity.market.actives(limit=limit).to_df()
             
             if 'symbol' in active_stocks.columns and 'name' in active_stocks.columns:
                 print(f"Successfully fetched {len(active_stocks)} symbols.")
                 return active_stocks[['symbol', 'name']].head(limit)
             else:
-                print("Error: 'symbol' or 'name' column not found.")
+                print("Error: 'symbol' or 'name' column not found in the data.")
                 return pd.DataFrame()
 
         except Exception as e:
