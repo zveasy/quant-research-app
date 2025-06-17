@@ -10,6 +10,7 @@ import dash_bootstrap_components as dbc
 import duckdb
 import os
 import json 
+import ast # <-- Add this new import
 
 # --- Data Loading Functions ---
 
@@ -27,8 +28,8 @@ def load_pca_data():
 
 def load_candidates_from_db():
     """
-    Loads all candidates from the DuckDB database and immediately formats
-    the 'rationale' column into a display-friendly string.
+    Loads all candidates from the DuckDB database and formats the 'rationale'
+    and 'recorded_at' columns for clean display.
     """
     try:
         script_dir = os.path.dirname(__file__)
@@ -43,23 +44,32 @@ def load_candidates_from_db():
         if df.empty:
             return pd.DataFrame()
 
-        # --- CORRECTED RATIONALE FORMATTING ---
-        def format_rationale(r):
-            # This function now correctly handles a Python list from DuckDB
-            if isinstance(r, list):
-                return "\n".join([f"• {item}" for item in r])
-            
-            # Fallback for data that might be a JSON string
-            try:
-                items = json.loads(r) 
-                if isinstance(items, list):
-                    return "\n".join([f"• {item}" for item in items])
-            except (TypeError, json.JSONDecodeError):
-                return str(r) # Return as a string if all else fails
-            return str(r)
+        # --- FINAL & ROBUST: Format the rationale column ---
+        def format_rationale(cell_value):
+            items = []
+            # Check if the value is already a list (ideal case from DuckDB)
+            if isinstance(cell_value, list):
+                items = cell_value
+            # Check if it's a string that looks like a list, e.g., "['item1', 'item2']"
+            elif isinstance(cell_value, str) and cell_value.startswith('[') and cell_value.endswith(']'):
+                try:
+                    # Use ast.literal_eval to safely parse the string into a list
+                    items = ast.literal_eval(cell_value)
+                except:
+                    # If parsing fails, treat the whole thing as a single string item
+                    items = [cell_value]
+            else:
+                # For any other data type, convert it to a string and put it in a list
+                items = [str(cell_value)]
+
+            # Join the list items into a single, bulleted string
+            return "\n".join([f"• {item}" for item in items])
         
         df['rationale'] = df['rationale'].apply(format_rationale)
-        # ----------------------------------------
+
+        # --- Format the timestamp column ---
+        df['recorded_at'] = pd.to_datetime(df['recorded_at'])
+        df['recorded_at'] = df['recorded_at'].dt.strftime('%Y-%m-%d %H:%M')
 
         return df
     except Exception as e:
@@ -146,7 +156,6 @@ def update_pca_charts(n):
     Input('fit-score-slider', 'value')
 )
 def update_candidates_table(min_fit_score):
-    # The data is now pre-formatted, so this callback is much simpler.
     df = load_candidates_from_db()
     if df.empty:
         return []
