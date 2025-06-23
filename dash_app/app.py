@@ -9,8 +9,8 @@ import numpy as np
 import dash_bootstrap_components as dbc
 import duckdb
 import os
-import json 
-import ast # <-- Add this new import
+import json
+import ast
 
 # --- Data Loading Functions ---
 
@@ -28,48 +28,51 @@ def load_pca_data():
 
 def load_candidates_from_db():
     """
-    Loads all candidates from the DuckDB database and formats the 'rationale'
-    and 'recorded_at' columns for clean display.
+    Loads all candidates from the DuckDB database and formats columns
+    for clean display in the dashboard.
     """
     try:
         script_dir = os.path.dirname(__file__)
         db_path = os.path.join(script_dir, '..', 'asset_universe.duckdb')
         con = duckdb.connect(database=db_path, read_only=True)
+        
         df = con.execute("""
-            SELECT symbol, fit_score, predictability_score_rmse AS predictability_score, rationale, recorded_at
-            FROM candidates ORDER BY fit_score DESC
+            SELECT 
+                symbol, fit_score, 
+                predictability_score_rmse AS predictability_score, 
+                momentum_12m,
+                rationale, 
+                recorded_at
+            FROM candidates 
+            ORDER BY fit_score DESC
         """).fetchdf()
         con.close()
 
         if df.empty:
             return pd.DataFrame()
 
-        # --- FINAL & ROBUST: Format the rationale column ---
-        def format_rationale(cell_value):
+        # --- Format Rationale ---
+        def format_rationale(r):
             items = []
-            # Check if the value is already a list (ideal case from DuckDB)
-            if isinstance(cell_value, list):
-                items = cell_value
-            # Check if it's a string that looks like a list, e.g., "['item1', 'item2']"
-            elif isinstance(cell_value, str) and cell_value.startswith('[') and cell_value.endswith(']'):
+            if isinstance(r, list):
+                items = r
+            elif isinstance(r, str) and r.startswith('[') and r.endswith(']'):
                 try:
-                    # Use ast.literal_eval to safely parse the string into a list
-                    items = ast.literal_eval(cell_value)
+                    items = ast.literal_eval(r)
                 except:
-                    # If parsing fails, treat the whole thing as a single string item
-                    items = [cell_value]
+                    items = [r]
             else:
-                # For any other data type, convert it to a string and put it in a list
-                items = [str(cell_value)]
-
-            # Join the list items into a single, bulleted string
+                items = [str(r)]
             return "\n".join([f"• {item}" for item in items])
-        
         df['rationale'] = df['rationale'].apply(format_rationale)
 
-        # --- Format the timestamp column ---
+        # --- Format Timestamp ---
         df['recorded_at'] = pd.to_datetime(df['recorded_at'])
         df['recorded_at'] = df['recorded_at'].dt.strftime('%Y-%m-%d %H:%M')
+        
+        # --- Format Momentum as Percentage ---
+        if 'momentum_12m' in df.columns:
+            df['momentum_12m'] = df['momentum_12m'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
 
         return df
     except Exception as e:
@@ -84,6 +87,7 @@ app.layout = dbc.Container([
     html.H1("Quant Research Dashboard", className="my-4 text-center"),
     dbc.Tabs(id="tabs-main", children=[
         
+        # --- TAB 1: Complete PCA Dashboard Layout ---
         dbc.Tab(label="PCA Factor Analysis", children=[
             dbc.Container([
                 html.H3("Principal Component Analysis", className="mt-3"),
@@ -100,6 +104,7 @@ app.layout = dbc.Container([
             ], fluid=True)
         ]),
 
+        # --- TAB 2: Complete Universe Scout Layout ---
         dbc.Tab(label="Universe Scout", children=[
             dbc.Container([
                 html.H3("AI Asset Screener", className="mt-3"),
@@ -115,6 +120,7 @@ app.layout = dbc.Container([
                             {'name': 'Symbol', 'id': 'symbol'},
                             {'name': 'AI Fit Score', 'id': 'fit_score'},
                             {'name': 'Predictability', 'id': 'predictability_score'},
+                            {'name': '12m Momentum', 'id': 'momentum_12m'},
                             {'name': 'Recorded At', 'id': 'recorded_at'},
                             {'name': 'AI Rationale', 'id': 'rationale'},
                         ],
@@ -136,6 +142,7 @@ app.layout = dbc.Container([
 
 # --- Callbacks ---
 
+# Callback for PCA Dashboard (Tab 1)
 @app.callback(
     Output('explained-variance', 'figure'),
     Output('pca-scatter', 'figure'),
@@ -150,6 +157,7 @@ def update_pca_charts(n):
     fig1 = px.bar(x=[f"PC{i+1}" for i in range(n)], y=pca.explained_variance_ratio_, title="Explained Variance")
     fig2 = px.scatter(x=X[:, 0], y=X[:, 1] if n > 1 else [0]*len(X), title="PCA Projection", hover_name=returns.index)
     return fig1, fig2
+
 
 @app.callback(
     Output('candidates-table', 'data'),

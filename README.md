@@ -1,115 +1,90 @@
-📄 README.md
-markdown
-Copy
-Edit
-# 📊 PCA Dashboard — Quant Research Tool
+# 📊 AI-Powered Universe Scout & Quant Research Dashboard
 
-This project builds a multi-ticker PCA dashboard for exploratory market analysis using Python, Dash, and Docker. The dashboard visualizes asset return correlations and principal components across a rolling time window.
+This project is an end-to-end pipeline for discovering, enriching, and ranking financial assets using quantitative factors and an AI agent. It features a multi-tab Dash web application for visualizing both factor analysis and the AI-driven asset screening results.
+
+---
+
+## ✨ Features
+
+- **Automated Pipeline**: A command-line script (`create_db.py`) that runs the entire data workflow.
+- **Factor Library**: A modular system for calculating quantitative factors like Value (Price-to-Book) and Momentum.
+- **AI Asset Scoring**: Uses an AI agent (in developer mode) to provide a "Fit Score" and rationale for each asset's suitability.
+- **Data Lake Storage**: Saves enriched asset data to fast Parquet files and logs metadata in a DuckDB database for quick queries.
+- **Interactive Dashboard**: A two-tab Dash application for:
+    1.  **PCA Factor Analysis**: Visualize latent factors across a basket of stocks.
+    2.  **Universe Scout**: A filterable, sortable table to review the AI-scored asset candidates.
+- **CI/CD Ready**: Includes a GitHub Actions workflow to automatically run tests on every push, ensuring code quality and stability.
 
 ---
 
 ## 📁 Project Structure
 
+
 jv-quant-research/
-├── dash_app/
-│ └── app.py # Dash web app (PCA dashboard)
-├── dataprep/
-│ └── init.py # get_returns, get_volatility, to_freq
-├── sample_data/
-│ └── multi_stock.csv # Sample price data for AAPL, MSFT, AMZN
-├── notebooks/
-│ └── explore_market.ipynb # Jupyter EDA (heatmaps, volatility)
-├── Dockerfile # Docker config to containerize the app
-├── docker-compose.yml # Local service runner w/ healthcheck
-├── requirements.txt # Python dependencies
-└── README.md
+├── .github/workflows/         # CI/CD workflows
+│   └── ci.yml
+├── dash_app/                  # Contains the Dash web application
+│   └── app.py
+├── factors/                   # Modules for calculating quant factors
+│   ├── value.py
+│   └── momentum.py
+├── universe_scouter/          # Core pipeline modules
+│   ├── ai_agent.py
+│   ├── enrichers.py
+│   └── storage.py
+├── tests/                     # PyTest suite
+│   └── test_pipeline.py
+├── create_db.py               # Main script to run the data pipeline
+├── asset_universe.duckdb      # Local database for the dashboard
+├── requirements.txt           # Python dependencies
+├── .env.example               # Example environment variables
+└── README.md                  # This file
 
-yaml
-Copy
-Edit
-
----
-
-## 🚀 Features
-
-- 📈 Rolling volatility and heatmap visualizations via Jupyter
-- 🧮 PCA dashboard built with Dash + Plotly
-- 📦 Fully containerized via Docker
-- ✅ Healthcheck-enabled Docker Compose setup
-- ☁️ Ready for deployment to AWS (via ECR + ECS or Fargate)
 
 ---
 
-## 🐍 Local Development
+## 🚀 Getting Started
 
-### ✅ 1. Set up Python environment
+### 1. Setup Environment
+
+First, create and activate a Python virtual environment.
 
 ```bash
+# Create the environment
 python3 -m venv .venv
+
+# Activate it (macOS/Linux)
 source .venv/bin/activate
+
+2. Install Dependencies
+Install all required packages from the requirements.txt file.
+
 pip install -r requirements.txt
-▶️ 2. Run Dash app locally
-bash
-Copy
-Edit
+
+3. Set Up API Keys
+Create a .env file in the project root by copying the example file.
+
+cp .env.example .env
+
+Now, edit the .env file and add your OpenAI API key.
+
+⚙️ How to Use
+There are two main parts to this project: running the data pipeline and viewing the dashboard.
+
+1. Run the Data Pipeline
+To discover, enrich, and score the assets, run the create_db.py script. This will generate the asset_universe.duckdb file that the dashboard reads from.
+
+python create_db.py
+
+2. Launch the Dashboard
+To view the results in the interactive web application, run the app.py script.
+
 python dash_app/app.py
-App will be available at: http://localhost:8050
 
-🐳 Run with Docker
-🔁 1. Build container
-bash
-Copy
-Edit
-docker build -t pca-dashboard .
-▶️ 2. Run container
-bash
-Copy
-Edit
-docker run -p 8050:8050 pca-dashboard
-App will be running at http://localhost:8050
+The dashboard will be available at http://127.0.0.1:8050.
 
-⚙️ Docker Compose (with healthcheck)
-bash
-Copy
-Edit
-docker compose up --build
-📦 Ready for AWS
-This repo is ready to be:
+3. Run the Tests
+To verify that all components are working as expected, run the pytest suite.
 
-Pushed to a GitHub repo
-
-Built and stored in AWS ECR
-
-Deployed via ECS/Fargate or integrated into a larger VPC service mesh
-
-🧪 Future Extensions
-Connect to REST API for live ticker selection
-
-Add login + access control (Flask-Login)
-
-Deploy behind reverse proxy (NGINX)
-
-Attach database (e.g., PostgreSQL + TimescaleDB)
-
-Add CI/CD (GitHub Actions → Docker → ECR)
-
-👤 Author
-Joshua Veasy
-Quantitative research tools built with Python, data, and curiosity.
-
-yaml
-Copy
-Edit
-
----
-
-Let me know if you want a version tailored for:
-- A GitHub portfolio
-- A job submission
-- Or internal AWS team handoff (with ECR tags, CI/CD notes, etc.)
-
-
-
-
-
-
+# This command will automatically discover and run all tests
+pytest
