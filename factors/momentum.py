@@ -2,7 +2,7 @@
 
 import yfinance as yf
 import numpy as np
-import pandas as pd # <-- Add this import
+import pandas as pd
 
 def get_12m_momentum(symbol: str) -> float:
     """
@@ -31,8 +31,9 @@ def get_12m_momentum(symbol: str) -> float:
         # Calculate the percentage return
         momentum = (end_price / start_price) - 1.0
         
-        # Ensure we return a standard float, not a numpy float or Series item
-        return float(momentum)
+        # --- THIS IS THE FIX ---
+        # Use .item() to extract the single float value and remove the warning.
+        return momentum.item()
         
     except Exception:
         # Return NaN on any error
@@ -50,7 +51,6 @@ if __name__ == '__main__':
 
     print(f"--- Momentum Factor: 12-Month Return ---")
     
-    # --- THIS IS THE FIX ---
     # Check if the result is a valid number before trying to format it
     if pd.notna(nvda_mom):
         print(f"Momentum for {nvda_symbol}: {nvda_mom:.2%}")
@@ -61,4 +61,3 @@ if __name__ == '__main__':
         print(f"Momentum for {vz_symbol}: {vz_mom:.2%}")
     else:
         print(f"Momentum for {vz_symbol}: Not Available")
-    # -----------------------
