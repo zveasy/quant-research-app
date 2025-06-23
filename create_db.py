@@ -9,7 +9,8 @@ import numpy as np
 from universe_scouter.ai_agent import get_ai_fit_score
 from universe_scouter.enrichers import get_predictability_score
 from factors.value import get_price_to_book
-from factors.momentum import get_12m_momentum # <-- NEW IMPORT
+from factors.momentum import get_12m_momentum
+from factors.quality import get_debt_to_equity # <--- NEW IMPORT
 
 # PASTE YOUR FULL PATH FROM THE 'pwd' COMMAND HERE
 PROJECT_ROOT = "/Users/joshuaveasy/O and L/jv-quant-research"
@@ -38,26 +39,24 @@ if __name__ == "__main__":
     for asset in discovered_assets:
         print(f"\n--- Processing {asset['symbol']} ---")
         
-        # Enrich with Predictability Score
         predict_score = get_predictability_score(asset['symbol'])
-        
-        # Enrich with Value Factor (Price-to-Book)
         pb_ratio = get_price_to_book(asset['symbol'])
-        print(f"   - P/B Ratio for {asset['symbol']}: {pb_ratio}")
+        momentum_12m = get_12m_momentum(asset['symbol'])
 
         # --- THIS IS THE NEW STEP ---
-        # Enrich with Momentum Factor
-        momentum_12m = get_12m_momentum(asset['symbol'])
-        if pd.notna(momentum_12m):
-             print(f"   - 12m Momentum for {asset['symbol']}: {momentum_12m:.2%}")
+        # Enrich with Quality Factor (Debt-to-Equity)
+        de_ratio = get_debt_to_equity(asset['symbol'])
+        if pd.notna(de_ratio):
+             print(f"   - Debt-to-Equity for {asset['symbol']}: {de_ratio:.2f}")
         else:
-             print(f"   - 12m Momentum for {asset['symbol']}: Not Available")
+             print(f"   - Debt-to-Equity for {asset['symbol']}: Not Available")
         # ----------------------------
 
         if predict_score is not None and np.isfinite(predict_score):
             asset['predictability_score_rmse'] = predict_score
             asset['price_to_book'] = pb_ratio
-            asset['momentum_12m'] = momentum_12m # Add the new momentum factor
+            asset['momentum_12m'] = momentum_12m
+            asset['debt_to_equity'] = de_ratio # Add the new quality factor
             
             ai_result = get_ai_fit_score(asset['symbol'], asset, dev_mode=True)
             
