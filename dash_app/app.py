@@ -41,6 +41,8 @@ def load_candidates_from_db():
                 symbol, fit_score, 
                 predictability_score_rmse AS predictability_score, 
                 momentum_12m,
+                debt_to_equity,
+                return_on_equity,
                 rationale, 
                 recorded_at
             FROM candidates 
@@ -54,25 +56,24 @@ def load_candidates_from_db():
         # --- Format Rationale ---
         def format_rationale(r):
             items = []
-            if isinstance(r, list):
-                items = r
+            if isinstance(r, list): items = r
             elif isinstance(r, str) and r.startswith('[') and r.endswith(']'):
-                try:
-                    items = ast.literal_eval(r)
-                except:
-                    items = [r]
-            else:
-                items = [str(r)]
+                try: items = ast.literal_eval(r)
+                except: items = [r]
+            else: items = [str(r)]
             return "\n".join([f"• {item}" for item in items])
         df['rationale'] = df['rationale'].apply(format_rationale)
 
         # --- Format Timestamp ---
-        df['recorded_at'] = pd.to_datetime(df['recorded_at'])
-        df['recorded_at'] = df['recorded_at'].dt.strftime('%Y-%m-%d %H:%M')
+        df['recorded_at'] = pd.to_datetime(df['recorded_at']).dt.strftime('%Y-%m-%d %H:%M')
         
-        # --- Format Momentum as Percentage ---
+        # --- Format Numeric Factors ---
         if 'momentum_12m' in df.columns:
             df['momentum_12m'] = df['momentum_12m'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
+        if 'debt_to_equity' in df.columns:
+            df['debt_to_equity'] = df['debt_to_equity'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+        if 'return_on_equity' in df.columns:
+            df['return_on_equity'] = df['return_on_equity'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
 
         return df
     except Exception as e:
@@ -121,6 +122,8 @@ app.layout = dbc.Container([
                             {'name': 'AI Fit Score', 'id': 'fit_score'},
                             {'name': 'Predictability', 'id': 'predictability_score'},
                             {'name': '12m Momentum', 'id': 'momentum_12m'},
+                            {'name': 'D/E Ratio', 'id': 'debt_to_equity'},
+                            {'name': 'ROE', 'id': 'return_on_equity'},
                             {'name': 'Recorded At', 'id': 'recorded_at'},
                             {'name': 'AI Rationale', 'id': 'rationale'},
                         ],
@@ -141,8 +144,6 @@ app.layout = dbc.Container([
 ], fluid=True)
 
 # --- Callbacks ---
-
-# Callback for PCA Dashboard (Tab 1)
 @app.callback(
     Output('explained-variance', 'figure'),
     Output('pca-scatter', 'figure'),
@@ -150,8 +151,7 @@ app.layout = dbc.Container([
 )
 def update_pca_charts(n):
     returns = load_pca_data()
-    if returns.empty:
-        return px.bar(title="No Data"), px.scatter(title="No Data")
+    if returns.empty: return px.bar(title="No Data"), px.scatter(title="No Data")
     pca = PCA(n_components=n)
     X = pca.fit_transform(returns)
     fig1 = px.bar(x=[f"PC{i+1}" for i in range(n)], y=pca.explained_variance_ratio_, title="Explained Variance")
@@ -165,9 +165,7 @@ def update_pca_charts(n):
 )
 def update_candidates_table(min_fit_score):
     df = load_candidates_from_db()
-    if df.empty:
-        return []
-
+    if df.empty: return []
     filtered_df = df[df['fit_score'] >= min_fit_score]
     return filtered_df.to_dict('records')
 
