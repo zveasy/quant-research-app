@@ -10,13 +10,15 @@ from universe_scouter.ai_agent import get_ai_fit_score
 from universe_scouter.enrichers import get_predictability_score
 from factors.value import get_price_to_book
 from factors.momentum import get_12m_momentum
-from factors.quality import get_debt_to_equity, get_return_on_equity # <--- NEW IMPORT
+from factors.quality import get_debt_to_equity, get_return_on_equity
+from factors.volatility import get_annualized_volatility # <--- NEW IMPORT
 
 # PASTE YOUR FULL PATH FROM THE 'pwd' COMMAND HERE
 PROJECT_ROOT = "/Users/joshuaveasy/O and L/jv-quant-research"
 DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
 
 def save_candidates_to_db(candidates: list[dict]):
+    """Saves the final candidate data to DuckDB, replacing the old table."""
     print(f"--- Saving data to absolute path: '{DB_FILE}' ---")
     if not candidates:
         print("No candidates to save.")
@@ -39,29 +41,33 @@ if __name__ == "__main__":
     for asset in discovered_assets:
         print(f"\n--- Processing {asset['symbol']} ---")
         
+        # --- Call all the factor functions ---
         predict_score = get_predictability_score(asset['symbol'])
         pb_ratio = get_price_to_book(asset['symbol'])
         momentum_12m = get_12m_momentum(asset['symbol'])
         de_ratio = get_debt_to_equity(asset['symbol'])
-        
-        # --- THIS IS THE NEW STEP ---
-        # Enrich with Quality Factor (Return on Equity)
         roe = get_return_on_equity(asset['symbol'])
-        if pd.notna(roe):
-             print(f"   - Return on Equity for {asset['symbol']}: {roe:.2%}")
+
+        # --- THIS IS THE NEW STEP ---
+        # Enrich with Volatility Factor
+        ann_vol = get_annualized_volatility(asset['symbol'])
+        if pd.notna(ann_vol):
+             print(f"   - Annualized Volatility for {asset['symbol']}: {ann_vol:.2%}")
         else:
-             print(f"   - Return on Equity for {asset['symbol']}: Not Available")
+             print(f"   - Annualized Volatility for {asset['symbol']}: Not Available")
         # ----------------------------
 
         if predict_score is not None and np.isfinite(predict_score):
+            # Add all factors to the asset data package
             asset['predictability_score_rmse'] = predict_score
             asset['price_to_book'] = pb_ratio
             asset['momentum_12m'] = momentum_12m
             asset['debt_to_equity'] = de_ratio
-            asset['return_on_equity'] = roe # Add the new ROE factor
+            asset['return_on_equity'] = roe
+            asset['annualized_volatility'] = ann_vol # Add the new volatility factor
             
+            # Get the AI score and add it to the final record
             ai_result = get_ai_fit_score(asset['symbol'], asset, dev_mode=True)
-            
             full_record = {**asset, **ai_result}
             full_record['recorded_at'] = datetime.now()
             all_candidates.append(full_record)

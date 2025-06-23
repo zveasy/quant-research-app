@@ -36,6 +36,7 @@ def load_candidates_from_db():
         db_path = os.path.join(script_dir, '..', 'asset_universe.duckdb')
         con = duckdb.connect(database=db_path, read_only=True)
         
+        # --- UPDATED QUERY: Selects the new annualized_volatility column ---
         df = con.execute("""
             SELECT 
                 symbol, fit_score, 
@@ -43,6 +44,7 @@ def load_candidates_from_db():
                 momentum_12m,
                 debt_to_equity,
                 return_on_equity,
+                annualized_volatility, -- <-- Added this line
                 rationale, 
                 recorded_at
             FROM candidates 
@@ -74,6 +76,10 @@ def load_candidates_from_db():
             df['debt_to_equity'] = df['debt_to_equity'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         if 'return_on_equity' in df.columns:
             df['return_on_equity'] = df['return_on_equity'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
+        # --- NEW: Format Annualized Volatility ---
+        if 'annualized_volatility' in df.columns:
+            df['annualized_volatility'] = df['annualized_volatility'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
+
 
         return df
     except Exception as e:
@@ -88,7 +94,6 @@ app.layout = dbc.Container([
     html.H1("Quant Research Dashboard", className="my-4 text-center"),
     dbc.Tabs(id="tabs-main", children=[
         
-        # --- TAB 1: Complete PCA Dashboard Layout ---
         dbc.Tab(label="PCA Factor Analysis", children=[
             dbc.Container([
                 html.H3("Principal Component Analysis", className="mt-3"),
@@ -105,18 +110,15 @@ app.layout = dbc.Container([
             ], fluid=True)
         ]),
 
-        # --- TAB 2: Complete Universe Scout Layout ---
         dbc.Tab(label="Universe Scout", children=[
             dbc.Container([
                 html.H3("AI Asset Screener", className="mt-3"),
-                html.P("Filter and review assets scored by the AI agent."),
-                dbc.Row([
-                    dbc.Col(dcc.Slider(id='fit-score-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))
-                ], className="my-4"),
+                dbc.Row(dbc.Col(dcc.Slider(id='fit-score-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
                 dbc.Row(dbc.Col([
                     html.H4("Matching Candidates"),
                     dash_table.DataTable(
                         id='candidates-table',
+                        # --- UPDATED COLUMNS: Added Volatility ---
                         columns=[
                             {'name': 'Symbol', 'id': 'symbol'},
                             {'name': 'AI Fit Score', 'id': 'fit_score'},
@@ -124,6 +126,7 @@ app.layout = dbc.Container([
                             {'name': '12m Momentum', 'id': 'momentum_12m'},
                             {'name': 'D/E Ratio', 'id': 'debt_to_equity'},
                             {'name': 'ROE', 'id': 'return_on_equity'},
+                            {'name': 'Volatility (1Y)', 'id': 'annualized_volatility'}, # <-- Added this column
                             {'name': 'Recorded At', 'id': 'recorded_at'},
                             {'name': 'AI Rationale', 'id': 'rationale'},
                         ],
