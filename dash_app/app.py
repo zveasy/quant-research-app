@@ -36,7 +36,7 @@ def load_candidates_from_db():
         db_path = os.path.join(script_dir, '..', 'asset_universe.duckdb')
         con = duckdb.connect(database=db_path, read_only=True)
         
-        # --- UPDATED QUERY: Selects the new annualized_volatility column ---
+        # --- UPDATED QUERY: Selects the new google_trends_score column ---
         df = con.execute("""
             SELECT 
                 symbol, fit_score, 
@@ -44,7 +44,8 @@ def load_candidates_from_db():
                 momentum_12m,
                 debt_to_equity,
                 return_on_equity,
-                annualized_volatility, -- <-- Added this line
+                annualized_volatility,
+                google_trends_score, -- <-- Added this line
                 rationale, 
                 recorded_at
             FROM candidates 
@@ -76,10 +77,11 @@ def load_candidates_from_db():
             df['debt_to_equity'] = df['debt_to_equity'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         if 'return_on_equity' in df.columns:
             df['return_on_equity'] = df['return_on_equity'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
-        # --- NEW: Format Annualized Volatility ---
         if 'annualized_volatility' in df.columns:
             df['annualized_volatility'] = df['annualized_volatility'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
-
+        # --- NEW: Format Google Trends Score ---
+        if 'google_trends_score' in df.columns:
+            df['google_trends_score'] = df['google_trends_score'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
 
         return df
     except Exception as e:
@@ -98,15 +100,8 @@ app.layout = dbc.Container([
             dbc.Container([
                 html.H3("Principal Component Analysis", className="mt-3"),
                 html.P("Analyze latent factors in asset returns."),
-                dcc.Dropdown(
-                    id='n-components',
-                    options=[{'label': str(i), 'value': i} for i in range(1, 4)],
-                    value=2, clearable=False, className="mb-3"
-                ),
-                dbc.Row([
-                    dbc.Col(dcc.Graph(id='explained-variance'), width=6),
-                    dbc.Col(dcc.Graph(id='pca-scatter'), width=6)
-                ])
+                dcc.Dropdown(id='n-components', options=[{'label': str(i), 'value': i} for i in range(1, 4)], value=2, clearable=False, className="mb-3"),
+                dbc.Row([dbc.Col(dcc.Graph(id='explained-variance'), width=6), dbc.Col(dcc.Graph(id='pca-scatter'), width=6)])
             ], fluid=True)
         ]),
 
@@ -118,7 +113,7 @@ app.layout = dbc.Container([
                     html.H4("Matching Candidates"),
                     dash_table.DataTable(
                         id='candidates-table',
-                        # --- UPDATED COLUMNS: Added Volatility ---
+                        # --- UPDATED COLUMNS: Added Google Trends ---
                         columns=[
                             {'name': 'Symbol', 'id': 'symbol'},
                             {'name': 'AI Fit Score', 'id': 'fit_score'},
@@ -126,7 +121,8 @@ app.layout = dbc.Container([
                             {'name': '12m Momentum', 'id': 'momentum_12m'},
                             {'name': 'D/E Ratio', 'id': 'debt_to_equity'},
                             {'name': 'ROE', 'id': 'return_on_equity'},
-                            {'name': 'Volatility (1Y)', 'id': 'annualized_volatility'}, # <-- Added this column
+                            {'name': 'Volatility (1Y)', 'id': 'annualized_volatility'},
+                            {'name': 'Google Trends', 'id': 'google_trends_score'}, # <-- Added this column
                             {'name': 'Recorded At', 'id': 'recorded_at'},
                             {'name': 'AI Rationale', 'id': 'rationale'},
                         ],
@@ -136,9 +132,7 @@ app.layout = dbc.Container([
                         style_cell={'textAlign': 'left'},
                         style_header={'fontWeight': 'bold'},
                         style_table={'overflowX': 'auto'},
-                        style_cell_conditional=[
-                            {'if': {'column_id': 'rationale'}, 'whiteSpace': 'pre-line'}
-                        ]
+                        style_cell_conditional=[{'if': {'column_id': 'rationale'}, 'whiteSpace': 'pre-line'}]
                     )
                 ]))
             ], fluid=True)

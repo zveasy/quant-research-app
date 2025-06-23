@@ -11,7 +11,8 @@ from universe_scouter.enrichers import get_predictability_score
 from factors.value import get_price_to_book
 from factors.momentum import get_12m_momentum
 from factors.quality import get_debt_to_equity, get_return_on_equity
-from factors.volatility import get_annualized_volatility # <--- NEW IMPORT
+from factors.volatility import get_annualized_volatility
+from alt_data.trends import get_google_trends_score # <--- NEW IMPORT
 
 # PASTE YOUR FULL PATH FROM THE 'pwd' COMMAND HERE
 PROJECT_ROOT = "/Users/joshuaveasy/O and L/jv-quant-research"
@@ -47,14 +48,15 @@ if __name__ == "__main__":
         momentum_12m = get_12m_momentum(asset['symbol'])
         de_ratio = get_debt_to_equity(asset['symbol'])
         roe = get_return_on_equity(asset['symbol'])
+        ann_vol = get_annualized_volatility(asset['symbol'])
 
         # --- THIS IS THE NEW STEP ---
-        # Enrich with Volatility Factor
-        ann_vol = get_annualized_volatility(asset['symbol'])
-        if pd.notna(ann_vol):
-             print(f"   - Annualized Volatility for {asset['symbol']}: {ann_vol:.2%}")
+        # Enrich with Alternative Data (Google Trends)
+        trends_score = get_google_trends_score(asset['symbol'])
+        if pd.notna(trends_score):
+             print(f"   - Google Trends Score for {asset['symbol']}: {trends_score:.2%}")
         else:
-             print(f"   - Annualized Volatility for {asset['symbol']}: Not Available")
+             print(f"   - Google Trends Score for {asset['symbol']}: Not Available")
         # ----------------------------
 
         if predict_score is not None and np.isfinite(predict_score):
@@ -64,7 +66,8 @@ if __name__ == "__main__":
             asset['momentum_12m'] = momentum_12m
             asset['debt_to_equity'] = de_ratio
             asset['return_on_equity'] = roe
-            asset['annualized_volatility'] = ann_vol # Add the new volatility factor
+            asset['annualized_volatility'] = ann_vol
+            asset['google_trends_score'] = trends_score # Add the new trends score
             
             # Get the AI score and add it to the final record
             ai_result = get_ai_fit_score(asset['symbol'], asset, dev_mode=True)
