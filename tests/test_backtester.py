@@ -7,16 +7,13 @@ import pandas as pd
 from datetime import datetime
 
 # Import the function we want to test
-from backtester.core import run_crossover_backtest, DB_FILE
+from backtester.core import run_crossover_backtest
 
 # This pytest fixture creates a dummy database file just for this test
 @pytest.fixture
 def setup_dummy_database(tmp_path):
     """Creates a temporary DuckDB database for testing."""
-    # Use a temporary directory provided by pytest
     db_path = tmp_path / "test_asset_universe.duckdb"
-    
-    # Create dummy data
     dummy_candidates = [
         {"symbol": "AAPL", "fit_score": 90},
         {"symbol": "GOOG", "fit_score": 85},
@@ -24,37 +21,26 @@ def setup_dummy_database(tmp_path):
     ]
     df = pd.DataFrame(dummy_candidates)
     
-    # Save to the temporary database
     con = duckdb.connect(database=str(db_path), read_only=False)
     con.execute("CREATE OR REPLACE TABLE candidates AS SELECT * FROM df")
     con.close()
     
-    # Return the path to the temp db
     return str(db_path)
 
-def test_run_crossover_backtest(setup_dummy_database, capsys):
+def test_run_crossover_backtest(setup_dummy_database, capsys, monkeypatch):
     """
     Tests that the run_crossover_backtest function executes without errors
     and prints a performance summary.
 
     Args:
-        setup_dummy_database: The pytest fixture that provides the path to the test DB.
+        setup_dummy_database: The fixture that provides the path to the test DB.
         capsys: The pytest fixture to capture printed output.
+        monkeypatch: The pytest fixture to modify modules at runtime.
     """
     # 1. Arrange
-    # The fixture has already created the database.
-    # We need to temporarily override the DB_FILE in the core module
-    # to point to our test database.
-    original_db_file = DB_FILE
-    # This is a bit of a trick to make our test isolated.
-    # We can't directly change the global variable in another file,
-    # so for a real production test, this would be refactored.
-    # For now, we'll rely on the fact that the script will find our dummy DB
-    # if we place it correctly. Let's assume the test runs from the root.
-    
-    # For this test, we'll rely on the default behavior, but a better way
-    # would be to make DB_FILE an argument to the function.
-    # This test will pass if the main DB_FILE exists.
+    # Use monkeypatch to temporarily change the DB_FILE variable
+    # in the backtester.core module to our temporary test database.
+    monkeypatch.setattr('backtester.core.DB_FILE', setup_dummy_database)
     
     # 2. Act
     # Run a fast backtest with small windows to speed up the test
@@ -66,5 +52,5 @@ def test_run_crossover_backtest(setup_dummy_database, capsys):
     assert "--- Performance Summary for 10/20 Strategy" in captured.out
     assert "Total Return [%]" in captured.out
     assert "Sharpe Ratio" in captured.out
-    assert "Error" not in captured.err
+    assert "Error" not in captured.out # Check that our custom error wasn't printed
 
