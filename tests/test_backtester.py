@@ -1,10 +1,10 @@
 # In: tests/test_backtester.py
 
 import pytest
-import os
 import duckdb
 import pandas as pd
-from datetime import datetime
+
+# The unused 'os' and 'datetime' imports have been removed to fix the linter error.
 
 from backtester.core import run_crossover_backtest
 
@@ -21,12 +21,8 @@ def setup_dummy_database(tmp_path):
     
     con = duckdb.connect(database=str(db_path), read_only=False)
     
-    # --- THIS IS THE FIX ---
-    # Register the DataFrame as a view and create the table from the view.
-    # This makes it clear to the linter that 'df' is being used.
     con.register('candidates_df_view', df)
     con.execute("CREATE OR REPLACE TABLE candidates AS SELECT * FROM candidates_df_view")
-    # --- END OF FIX ---
     
     con.close()
     
