@@ -56,14 +56,15 @@ def load_candidates_from_db():
 
         def format_rationale(r):
             items = []
-            if isinstance(r, list): items = r
+            if isinstance(r, list):
+                items = r
             elif isinstance(r, str) and r.startswith('[') and r.endswith(']'):
                 try: 
                     items = ast.literal_eval(r)
-                # Catch specific errors instead of a bare 'except'
                 except (ValueError, SyntaxError): 
                     items = [r]
-            else: items = [str(r)]
+            else:
+                items = [str(r)]
             return "\n".join([f"• {item}" for item in items])
         df['rationale'] = df['rationale'].apply(format_rationale)
 
@@ -142,7 +143,8 @@ app.layout = dbc.Container([
 )
 def update_pca_charts(n):
     returns = load_pca_data()
-    if returns.empty: return px.bar(title="No Data"), px.scatter(title="No Data")
+    if returns.empty:
+        return px.bar(title="No Data"), px.scatter(title="No Data")
     pca = PCA(n_components=n)
     X = pca.fit_transform(returns)
     fig1 = px.bar(x=[f"PC{i+1}" for i in range(n)], y=pca.explained_variance_ratio_, title="Explained Variance")
@@ -155,7 +157,8 @@ def update_pca_charts(n):
 )
 def update_candidates_table(min_fit_score):
     df = load_candidates_from_db()
-    if df.empty: return []
+    if df.empty:
+        return []
     filtered_df = df[df['fit_score'] >= min_fit_score]
     return filtered_df.to_dict('records')
 
