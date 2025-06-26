@@ -3,6 +3,7 @@
 import yfinance as yf
 import numpy as np
 
+
 def get_price_to_book(symbol: str) -> float:
     """
     Fetches the Price-to-Book (P/B) ratio for a given stock symbol.
@@ -17,7 +18,7 @@ def get_price_to_book(symbol: str) -> float:
     """
     try:
         stock_info = yf.Ticker(symbol).info
-        pb_ratio = stock_info.get('priceToBook')
+        pb_ratio = stock_info.get("priceToBook")
 
         if pb_ratio:
             return float(pb_ratio)
@@ -28,8 +29,9 @@ def get_price_to_book(symbol: str) -> float:
         # Return NaN on any error (e.g., network issue, invalid symbol)
         return np.nan
 
+
 # --- To test this function directly ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Test with a well-known value stock (a bank) and a growth stock
     jpm_symbol = "JPM"
     tsla_symbol = "TSLA"
@@ -37,6 +39,6 @@ if __name__ == '__main__':
     jpm_pb = get_price_to_book(jpm_symbol)
     tsla_pb = get_price_to_book(tsla_symbol)
 
-    print(f"--- Value Factor: Price-to-Book Ratio ---")
+    print("--- Value Factor: Price-to-Book Ratio ---")
     print(f"P/B for {jpm_symbol}: {jpm_pb:.2f}")
     print(f"P/B for {tsla_symbol}: {tsla_pb:.2f}")

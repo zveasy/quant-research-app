@@ -1,6 +1,5 @@
 # In: tests/test_alt_data.py
 
-import pytest
 import pandas as pd
 
 # Import the function we want to test
@@ -9,9 +8,10 @@ from alt_data.trends import get_google_trends_score
 # --- Test Data ---
 VALID_KEYWORD = "AAPL"
 # A nonsense keyword that is very unlikely to have any search trends
-INVALID_KEYWORD = "ASDFQWERZXCV" 
+INVALID_KEYWORD = "ASDFQWERZXCV"
 
 # --- PyTest Cases ---
+
 
 def test_google_trends_valid_keyword():
     """
@@ -37,4 +37,3 @@ def test_google_trends_invalid_keyword():
     # 3. Assert
     # For a keyword with no trend data, our function is designed to return 0.0
     assert score == 0.0
-

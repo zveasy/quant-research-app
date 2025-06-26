@@ -4,6 +4,7 @@ import yfinance as yf
 import numpy as np
 import pandas as pd
 
+
 def get_12m_momentum(symbol: str) -> float:
     """
     Calculates the 12-month price momentum for a given stock symbol.
@@ -21,26 +22,27 @@ def get_12m_momentum(symbol: str) -> float:
         # Download roughly one year of data
         stock_data = yf.download(symbol, period="1y", progress=False, auto_adjust=True)
 
-        if len(stock_data) < 250: # Ensure we have enough data for a year
+        if len(stock_data) < 250:  # Ensure we have enough data for a year
             return np.nan
 
         # Get the first and last available closing prices
-        start_price = stock_data['Close'].iloc[0]
-        end_price = stock_data['Close'].iloc[-1]
+        start_price = stock_data["Close"].iloc[0]
+        end_price = stock_data["Close"].iloc[-1]
 
         # Calculate the percentage return
         momentum = (end_price / start_price) - 1.0
-        
+
         # --- THIS IS THE FIX ---
         # Use .item() to extract the single float value and remove the warning.
         return momentum.item()
-        
+
     except Exception:
         # Return NaN on any error
         return np.nan
 
+
 # --- To test this function directly ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Test with a stock known for recent momentum
     nvda_symbol = "NVDA"
     # And one that might be less so
@@ -49,8 +51,8 @@ if __name__ == '__main__':
     nvda_mom = get_12m_momentum(nvda_symbol)
     vz_mom = get_12m_momentum(vz_symbol)
 
-    print(f"--- Momentum Factor: 12-Month Return ---")
-    
+    print("--- Momentum Factor: 12-Month Return ---")
+
     # Check if the result is a valid number before trying to format it
     if pd.notna(nvda_mom):
         print(f"Momentum for {nvda_symbol}: {nvda_mom:.2%}")

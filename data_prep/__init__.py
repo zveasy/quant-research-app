@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 def get_returns(df, mode="simple"):
     """
     Calculates returns for a DataFrame of prices.
@@ -13,12 +14,14 @@ def get_returns(df, mode="simple"):
     else:
         raise ValueError("mode must be 'simple' or 'log'")
 
+
 def get_volatility(df_returns, window=22):
     """
     Calculates rolling annualized volatility.
     Assumes input is returns, not raw prices.
     """
     return df_returns.rolling(window).std() * np.sqrt(252)
+
 
 def to_freq(df, freq="M"):
     """

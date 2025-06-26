@@ -3,8 +3,6 @@
 import zmq
 import duckdb
 import os
-import pandas as pd
-import json
 import time
 
 # --- Configuration ---
@@ -14,6 +12,7 @@ DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
 ZMQ_PORT = "5556"
 TOPIC = "UNIVERSE_TODAY"
 
+
 def get_latest_candidates_as_json():
     """Connects to the database and returns the latest candidates as a JSON string."""
     try:
@@ -21,10 +20,11 @@ def get_latest_candidates_as_json():
         df = con.execute("SELECT * FROM candidates ORDER BY fit_score DESC").fetchdf()
         con.close()
         # Convert DataFrame to a list of dictionaries, then to a JSON string
-        return df.to_json(orient='records')
+        return df.to_json(orient="records")
     except Exception as e:
         print(f"Publisher Error: Could not read from database. {e}")
         return None
+
 
 def run_publisher():
     """
@@ -62,6 +62,7 @@ def run_publisher():
         socket.close()
         context.term()
 
+
 # --- To run this publisher directly ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_publisher()

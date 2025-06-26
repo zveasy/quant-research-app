@@ -4,6 +4,7 @@ import yfinance as yf
 import numpy as np
 import pandas as pd
 
+
 def get_annualized_volatility(symbol: str) -> float:
     """
     Calculates the 1-year annualized volatility (standard deviation
@@ -23,7 +24,7 @@ def get_annualized_volatility(symbol: str) -> float:
             return np.nan
 
         # Calculate daily returns
-        daily_returns = stock_data['Close'].pct_change().dropna()
+        daily_returns = stock_data["Close"].pct_change().dropna()
 
         # Calculate the standard deviation of daily returns
         daily_volatility = daily_returns.std()
@@ -35,16 +36,17 @@ def get_annualized_volatility(symbol: str) -> float:
     except Exception:
         return np.nan
 
+
 # --- To test this function directly ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Test with a historically volatile stock and a more stable utility stock
     tsla_symbol = "TSLA"
-    duk_symbol = "DUK" # Duke Energy
+    duk_symbol = "DUK"  # Duke Energy
 
     tsla_vol = get_annualized_volatility(tsla_symbol)
     duk_vol = get_annualized_volatility(duk_symbol)
 
-    print(f"--- Volatility Factor: 1-Year Annualized Volatility ---")
+    print("--- Volatility Factor: 1-Year Annualized Volatility ---")
 
     if pd.notna(tsla_vol):
         print(f"Annualized Volatility for {tsla_symbol}: {tsla_vol:.2%}")

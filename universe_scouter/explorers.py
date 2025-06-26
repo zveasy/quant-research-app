@@ -1,10 +1,12 @@
 import pandas as pd
 from openbb import obb
 
+
 class EquityExplorer:
     """
     Discovers tradable equity assets using the OpenBB Hub.
     """
+
     def get_top_gainers(self, limit: int = 250) -> pd.DataFrame:
         """
         Fetches a list of the top-gaining US equities.
@@ -14,10 +16,10 @@ class EquityExplorer:
         try:
             # CORRECTED: Use the .gainers() function which is available.
             top_gainers = obb.equity.discovery.gainers(limit=limit).to_df()
-            
-            if 'symbol' in top_gainers.columns and 'name' in top_gainers.columns:
+
+            if "symbol" in top_gainers.columns and "name" in top_gainers.columns:
                 print(f"Successfully fetched {len(top_gainers)} symbols.")
-                return top_gainers[['symbol', 'name']].head(limit)
+                return top_gainers[["symbol", "name"]].head(limit)
             else:
                 print("Error: 'symbol' or 'name' column not found in the data.")
                 return pd.DataFrame()
@@ -26,8 +28,9 @@ class EquityExplorer:
             print(f"An error occurred while fetching data from OpenBB: {e}")
             return pd.DataFrame()
 
+
 # Example of how to run it
-if __name__ == '__main__':
+if __name__ == "__main__":
     explorer = EquityExplorer()
     top_stocks = explorer.get_top_gainers(limit=10)
     print("\nTop 10 Top Gaining Stocks:")

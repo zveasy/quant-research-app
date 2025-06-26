@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+
 def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -> dict:
     """
     Sends enriched asset data to GPT-4o to get a suitability score.
@@ -35,9 +36,9 @@ def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -
             "rationale": [
                 f"Strong momentum ({enriched_data.get('momentum_12m', 0)*100:.2f}%) and high ROE suggest robust performance.",
                 "Public interest (Google Trends) appears stable.",
-                "Volatility is within acceptable limits for its sector."
+                "Volatility is within acceptable limits for its sector.",
             ],
-            "confidence": "high"
+            "confidence": "high",
         }
     # --- END DEV MODE ---
 
@@ -48,12 +49,12 @@ def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a quantitative analyst. Your task is to provide a 'fit_score' (0-100) and a 'rationale' as a list of bullet points in a JSON object based on the asset summary provided."
+                    "content": "You are a quantitative analyst. Your task is to provide a 'fit_score' (0-100) and a 'rationale' as a list of bullet points in a JSON object based on the asset summary provided.",
                 },
                 {
                     "role": "user",
-                    "content": f"Please evaluate the following asset based on this data summary:\n\n{summary}"
-                }
+                    "content": f"Please evaluate the following asset based on this data summary:\n\n{summary}",
+                },
             ],
             response_format={"type": "json_object"},
             temperature=0.2,
