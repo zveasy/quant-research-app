@@ -13,8 +13,8 @@ from factors.quality import get_debt_to_equity, get_return_on_equity
 from factors.volatility import get_annualized_volatility
 from alt_data.trends import get_google_trends_score  # <--- NEW IMPORT
 
-# PASTE YOUR FULL PATH FROM THE 'pwd' COMMAND HERE
-PROJECT_ROOT = "/Users/joshuaveasy/O and L/jv-quant-research"
+# Set your project root directory (not the DB file itself)
+PROJECT_ROOT = "/Users/zakariyaveasy/Desktop/ZKJ/quant-research-app"
 DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
 
 

@@ -6,7 +6,7 @@ import vectorbt as vbt
 import os
 
 # --- Configuration ---
-PROJECT_ROOT = "/Users/joshuaveasy/O and L/jv-quant-research"
+PROJECT_ROOT = "/Users/zakariyaveasy/Desktop/ZKJ/quant-research-app/asset_universe.duckdb"
 DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
 NUM_ASSETS_TO_TEST = 3
 

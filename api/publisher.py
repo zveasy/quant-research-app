@@ -7,7 +7,7 @@ import time
 
 # --- Configuration ---
 # Use the absolute path to ensure the db is found
-PROJECT_ROOT = "/Users/joshuaveasy/O and L/jv-quant-research"
+PROJECT_ROOT = "/Users/zakariyaveasy/Desktop/ZKJ/quant-research-app/asset_universe.duckdb"
 DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
 ZMQ_PORT = "5556"
 TOPIC = "UNIVERSE_TODAY"
