@@ -13,9 +13,8 @@ from factors.quality import get_debt_to_equity, get_return_on_equity
 from factors.volatility import get_annualized_volatility
 from alt_data.trends import get_google_trends_score  # <--- NEW IMPORT
 
-# Set your project root directory (not the DB file itself)
-PROJECT_ROOT = "/Users/zakariyaveasy/Desktop/ZKJ/quant-research-app"
-DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
+# Read the database path from the environment with a sensible default
+DB_FILE = os.getenv("DB_PATH", "./asset_universe.duckdb")
 
 
 def save_candidates_to_db(candidates: list[dict]):
