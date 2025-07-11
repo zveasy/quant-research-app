@@ -52,16 +52,20 @@ def create_fake_vectorbt(monkeypatch):
 
 
 def fake_download(symbols, start=None, end=None, period=None, auto_adjust=True):
+    import pandas as pd
     if isinstance(symbols, str):
         syms = [symbols]
     else:
         syms = list(symbols)
     dates = pd.date_range(start or '2023-01-01', periods=10, freq='D')
-    data = {}
-    for s in syms:
-        data[(s, 'Close')] = np.linspace(100, 110, num=len(dates))
+    # Create a DataFrame with a 'Close' column for each symbol
+    data = {s: np.linspace(100, 110, num=len(dates)) for s in syms}
     df = pd.DataFrame(data, index=dates)
-    df.columns = pd.MultiIndex.from_tuples(df.columns)
+    # If the code expects a MultiIndex, add it; otherwise, keep single-level columns
+    df.columns.name = None
+    # Add a 'Close' column if needed for compatibility
+    if 'Close' not in df.columns:
+        df['Close'] = 100
     return df
 
 

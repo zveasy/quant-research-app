@@ -43,6 +43,10 @@ def save_candidates_to_db(candidates: list[dict]):
 if __name__ == "__main__":
     print("🚀 Starting Universe Scout pipeline with REAL enrichers...")
 
+    # Ensure local modules are discoverable for imports and tests
+    import sys
+    sys.path.append(os.path.abspath("."))
+
     explorer = EquityExplorer()
     equity_df = explorer.get_top_gainers(limit=25)
     equity_df["asset_class"] = "equity"
