@@ -16,8 +16,9 @@ def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -
     Now includes a more descriptive summary in the prompt for better analysis.
     """
     # --- Build a descriptive summary for the AI ---
+    asset_class = enriched_data.get("asset_class", "N/A")
     summary = f"Asset Ticker: {symbol}\n"
-    summary += f"Asset Class: {enriched_data.get('asset_class', 'N/A')}\n"
+    summary += f"Asset Class: {asset_class}\n"
     summary += f"Sector: {enriched_data.get('sector', 'N/A')}\n\n"
     summary += "Key Quantitative Factors:\n"
     summary += f"- 12-Month Momentum: {enriched_data.get('momentum_12m', 0)*100:.2f}%\n"
