@@ -5,6 +5,15 @@ import yfinance as yf
 import vectorbt as vbt
 import os
 
+# Default symbols for non-equity asset classes used when no database is
+# available for them. These are intentionally short lists so unit tests can run
+# quickly with patched data.
+ASSET_CLASS_SYMBOLS = {
+    "crypto": ["BTC-USD", "ETH-USD"],
+    "bonds": ["IEF"],
+    "forex": ["EURUSD=X"],
+}
+
 # --- Configuration ---
 PROJECT_ROOT = "/Users/zakariyaveasy/Desktop/ZKJ/quant-research-app/asset_universe.duckdb"
 DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
@@ -12,7 +21,11 @@ NUM_ASSETS_TO_TEST = 3
 
 
 def run_crossover_backtest(
-    short_window: int, long_window: int, start_date: str = None, end_date: str = None
+    short_window: int,
+    long_window: int,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    asset_classes: list[str] | None = None,
 ):
     """
     Loads top assets and backtests a moving average crossover strategy
@@ -23,7 +36,13 @@ def run_crossover_backtest(
         long_window (int): The number of days for the long-term moving average.
         start_date (str, optional): The start date for the backtest (YYYY-MM-DD).
         end_date (str, optional): The end date for the backtest (YYYY-MM-DD).
+        asset_classes (list[str], optional): List of asset classes to include.
+            Equities are loaded from the candidates database while other classes
+            use built-in symbol mappings. Defaults to ["equity"].
     """
+    if asset_classes is None:
+        asset_classes = ["equity"]
+
     test_period = (
         f"{start_date} to {end_date}" if start_date and end_date else "full period"
     )
@@ -31,17 +50,34 @@ def run_crossover_backtest(
         f"\n\n--- Starting Back-test for {short_window}/{long_window} Crossover ({test_period}) ---"
     )
 
-    # 1. Load top assets from the database
-    try:
-        con = duckdb.connect(database=DB_FILE, read_only=True)
-        top_assets_df = con.execute(
-            f"SELECT symbol FROM candidates ORDER BY fit_score DESC LIMIT {NUM_ASSETS_TO_TEST}"
-        ).fetchdf()
-        con.close()
-        symbols = top_assets_df["symbol"].tolist()
-        print(f"Loaded top {len(symbols)} assets for back-test: {symbols}")
-    except Exception as e:
-        print(f"❌ Error loading assets from database: {e}")
+    symbols: list[str] = []
+
+    if "equity" in asset_classes:
+        try:
+            con = duckdb.connect(database=DB_FILE, read_only=True)
+            top_assets_df = con.execute(
+                f"SELECT symbol FROM candidates ORDER BY fit_score DESC LIMIT {NUM_ASSETS_TO_TEST}"
+            ).fetchdf()
+            con.close()
+            eq_symbols = top_assets_df["symbol"].tolist()
+            symbols.extend(eq_symbols)
+            print(f"Loaded top {len(eq_symbols)} equity assets for back-test: {eq_symbols}")
+        except Exception as e:
+            print(f"❌ Error loading equity assets from database: {e}")
+            return
+
+    for cls in asset_classes:
+        if cls == "equity":
+            continue
+        extras = ASSET_CLASS_SYMBOLS.get(cls, [])
+        if extras:
+            symbols.extend(extras)
+            print(f"Added {cls} assets: {extras}")
+        else:
+            print(f"⚠️ Unknown asset class: {cls}")
+
+    if not symbols:
+        print("❌ No symbols to back-test. Exiting.")
         return
 
     # 2. Download historical price data
