@@ -6,9 +6,8 @@ import os
 import time
 
 # --- Configuration ---
-# Use the absolute path to ensure the db is found
-PROJECT_ROOT = "/Users/zakariyaveasy/Desktop/ZKJ/quant-research-app/asset_universe.duckdb"
-DB_FILE = os.path.join(PROJECT_ROOT, "asset_universe.duckdb")
+# Read database path from the environment with a fallback
+DB_FILE = os.getenv("DB_PATH", "./asset_universe.duckdb")
 ZMQ_PORT = "5556"
 TOPIC = "UNIVERSE_TODAY"
 

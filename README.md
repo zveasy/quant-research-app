@@ -61,18 +61,21 @@ Install all required packages from the requirements.txt file.
 
 pip install -r requirements.txt
 
-3. Set Up API Keys
-Create a .env file in the project root by copying the example file.
+3. Set Up Environment Variables
+Create a `.env` file in the project root by copying the example file.
 
 cp .env.example .env
 
-Now, edit the .env file and add your OpenAI API key.
+Edit the `.env` file and add your OpenAI API key.  You can also change
+`DB_PATH` if you want the DuckDB file stored somewhere else.
 
 ⚙️ How to Use
 There are two main parts to this project: running the data pipeline and viewing the dashboard.
 
 1. Run the Data Pipeline
-To discover, enrich, and score the assets, run the create_db.py script. This will generate the asset_universe.duckdb file that the dashboard reads from.
+Run `create_db.py` to discover, enrich, and score the assets. The
+database will be written to the location specified by `DB_PATH` (or
+`./asset_universe.duckdb` by default) for the dashboard to read.
 
 python create_db.py
 
