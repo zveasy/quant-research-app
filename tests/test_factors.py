@@ -2,17 +2,28 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 
 # Import all the factor functions you've created
 from factors.value import get_price_to_book
 from factors.quality import get_debt_to_equity, get_return_on_equity
 from factors.momentum import get_12m_momentum
 from factors.volatility import get_annualized_volatility
+from factors.fx_carry import get_fx_carry
+from factors.bond_duration import get_bond_duration
 
 # --- Test Data ---
 # A list of symbols to test against. One likely to work, one likely to fail.
 VALID_SYMBOL = "AAPL"
 INVALID_SYMBOL = "INVALID_SYMBOL_XYZ"
+
+# FX test data
+FX_BASE = "EUR"
+FX_QUOTE = "USD"
+
+# Bond test data
+BOND_SYMBOL = "IEF"  # iShares 7-10 Year Treasury ETF
+INVALID_BOND = "INVALID_BOND"
 
 
 # --- Helper Function for Testing ---
@@ -55,3 +66,23 @@ def test_annualized_volatility():
     """Tests the Annualized Volatility factor."""
     check_factor_output(get_annualized_volatility(VALID_SYMBOL))
     assert pd.isna(get_annualized_volatility(INVALID_SYMBOL))
+
+
+def test_fx_carry():
+    """Tests the FX carry factor."""
+    value = get_fx_carry(FX_BASE, FX_QUOTE)
+    if pd.isna(value):
+        pytest.skip("FX carry data unavailable")
+    check_factor_output(value)
+
+    assert pd.isna(get_fx_carry("AAA", "BBB"))
+
+
+def test_bond_duration():
+    """Tests the bond duration factor."""
+    value = get_bond_duration(BOND_SYMBOL)
+    if pd.isna(value):
+        pytest.skip("Bond duration data unavailable")
+    check_factor_output(value)
+
+    assert pd.isna(get_bond_duration(INVALID_BOND))
