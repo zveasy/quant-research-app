@@ -10,9 +10,12 @@ This project is an end-to-end pipeline for discovering, enriching, and ranking f
 - **Factor Library**: A modular system for calculating quantitative factors like Value (Price-to-Book) and Momentum.
 - **AI Asset Scoring**: Uses an AI agent (in developer mode) to provide a "Fit Score" and rationale for each asset's suitability.
 - **Data Lake Storage**: Saves enriched asset data to fast Parquet files and logs metadata in a DuckDB database for quick queries.
-- **Interactive Dashboard**: A two-tab Dash application for:
+- **Interactive Dashboard**: A multi-tab Dash application for:
     1.  **PCA Factor Analysis**: Visualize latent factors across a basket of stocks.
-    2.  **Universe Scout**: A filterable, sortable table to review the AI-scored asset candidates.
+    2.  **Equities Scout**: Review the AI-scored equity candidates.
+    3.  **Currencies**: Screen currency pairs with FX carry metrics.
+    4.  **Carbon Credits**: Explore carbon credit opportunities.
+    5.  **Green Bonds**: Browse green bond issuances with duration info.
 - **CI/CD Ready**: Includes a GitHub Actions workflow to automatically run tests on every push, ensuring code quality and stability.
 
 ---
@@ -91,3 +94,11 @@ To verify that all components are working as expected, run the pytest suite.
 
 # This command will automatically discover and run all tests
 pytest
+
+## 📸 Example Screenshots
+
+Below are sample images of the new dashboard tabs.
+
+| Currencies | Carbon Credits | Green Bonds |
+|-----------|---------------|-------------|
+| ![Currencies](docs/screenshots/currencies.ppm) | ![Carbon Credits](docs/screenshots/carbon_credits.ppm) | ![Green Bonds](docs/screenshots/green_bonds.ppm) |

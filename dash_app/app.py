@@ -25,7 +25,7 @@ def load_pca_data():
         print("Error: sample_data/multi_stock.csv not found.")
         return pd.DataFrame()
 
-def load_candidates_from_db():
+def load_candidates_from_db(asset_class: str | None = None):
     """
     Loads all candidates from the DuckDB database and formats columns
     for clean display in the dashboard.
@@ -35,20 +35,16 @@ def load_candidates_from_db():
         db_path = os.path.join(script_dir, '..', 'asset_universe.duckdb')
         con = duckdb.connect(database=db_path, read_only=True)
         
-        df = con.execute("""
-            SELECT 
-                symbol, fit_score, 
-                predictability_score_rmse AS predictability_score, 
-                momentum_12m,
-                debt_to_equity,
-                return_on_equity,
-                annualized_volatility,
-                google_trends_score,
-                rationale, 
-                recorded_at
-            FROM candidates 
-            ORDER BY fit_score DESC
-        """).fetchdf()
+        query = "SELECT * FROM candidates"
+        params: tuple | None = None
+        if asset_class:
+            query += " WHERE asset_class = ?"
+            params = (asset_class,)
+        query += " ORDER BY fit_score DESC"
+        if params:
+            df = con.execute(query, params).fetchdf()
+        else:
+            df = con.execute(query).fetchdf()
         con.close()
 
         if df.empty:
@@ -72,6 +68,8 @@ def load_candidates_from_db():
         df['recorded_at'] = pd.to_datetime(df['recorded_at']).dt.strftime('%Y-%m-%d %H:%M')
         if 'momentum_12m' in df.columns:
             df['momentum_12m'] = df['momentum_12m'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
+        if 'price_to_book' in df.columns:
+            df['price_to_book'] = df['price_to_book'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         if 'debt_to_equity' in df.columns:
             df['debt_to_equity'] = df['debt_to_equity'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         if 'return_on_equity' in df.columns:
@@ -80,6 +78,10 @@ def load_candidates_from_db():
             df['annualized_volatility'] = df['annualized_volatility'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
         if 'google_trends_score' in df.columns:
             df['google_trends_score'] = df['google_trends_score'].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "N/A")
+        if 'fx_carry' in df.columns:
+            df['fx_carry'] = df['fx_carry'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+        if 'bond_duration' in df.columns:
+            df['bond_duration'] = df['bond_duration'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
 
         return df
     except Exception as e:
@@ -119,15 +121,102 @@ app.layout = dbc.Container([
                     dash_table.DataTable(
                         id='candidates-table',
                         columns=[
-                            {'name': 'Symbol', 'id': 'symbol'}, {'name': 'AI Fit Score', 'id': 'fit_score'},
-                            {'name': 'Predictability', 'id': 'predictability_score'}, {'name': '12m Momentum', 'id': 'momentum_12m'},
-                            {'name': 'D/E Ratio', 'id': 'debt_to_equity'}, {'name': 'ROE', 'id': 'return_on_equity'},
-                            {'name': 'Volatility (1Y)', 'id': 'annualized_volatility'}, {'name': 'Google Trends', 'id': 'google_trends_score'},
-                            {'name': 'Recorded At', 'id': 'recorded_at'}, {'name': 'AI Rationale', 'id': 'rationale'},
+                            {'name': 'Symbol', 'id': 'symbol'},
+                            {'name': 'Asset Class', 'id': 'asset_class'},
+                            {'name': 'AI Fit Score', 'id': 'fit_score'},
+                            {'name': 'Predictability', 'id': 'predictability_score'},
+                            {'name': '12m Momentum', 'id': 'momentum_12m'},
+                            {'name': 'Price/Book', 'id': 'price_to_book'},
+                            {'name': 'D/E Ratio', 'id': 'debt_to_equity'},
+                            {'name': 'ROE', 'id': 'return_on_equity'},
+                            {'name': 'Volatility (1Y)', 'id': 'annualized_volatility'},
+                            {'name': 'Google Trends', 'id': 'google_trends_score'},
+                            {'name': 'FX Carry', 'id': 'fx_carry'},
+                            {'name': 'Duration', 'id': 'bond_duration'},
+                            {'name': 'Recorded At', 'id': 'recorded_at'},
+                            {'name': 'AI Rationale', 'id': 'rationale'},
                         ],
                         page_size=15, sort_action='native', filter_action='native',
                         style_cell={'textAlign': 'left'}, style_header={'fontWeight': 'bold'},
-                        style_table={'overflowX': 'auto'}, style_cell_conditional=[{'if': {'column_id': 'rationale'}, 'whiteSpace': 'pre-line'}]
+                        style_table={'overflowX': 'auto', 'maxHeight': '500px', 'overflowY': 'auto'},
+                        style_cell_conditional=[{'if': {'column_id': 'rationale'}, 'whiteSpace': 'pre-line'}]
+                    )
+                ]))
+            ], fluid=True)
+        ]),
+
+        dbc.Tab(label="Currencies", children=[
+            dbc.Container([
+                html.H3("Currency Screener", className="mt-3"),
+                dbc.Row(dbc.Col(dcc.Slider(id='currency-fit-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
+                dbc.Row(dbc.Col([
+                    html.H4("Matching Candidates"),
+                    dash_table.DataTable(
+                        id='currency-table',
+                        columns=[
+                            {'name': 'Symbol', 'id': 'symbol'},
+                            {'name': 'Asset Class', 'id': 'asset_class'},
+                            {'name': 'AI Fit Score', 'id': 'fit_score'},
+                            {'name': 'Predictability', 'id': 'predictability_score'},
+                            {'name': 'FX Carry', 'id': 'fx_carry'},
+                            {'name': 'Recorded At', 'id': 'recorded_at'},
+                            {'name': 'AI Rationale', 'id': 'rationale'},
+                        ],
+                        page_size=15, sort_action='native', filter_action='native',
+                        style_cell={'textAlign': 'left'}, style_header={'fontWeight': 'bold'},
+                        style_table={'overflowX': 'auto', 'maxHeight': '500px', 'overflowY': 'auto'},
+                        style_cell_conditional=[{'if': {'column_id': 'rationale'}, 'whiteSpace': 'pre-line'}]
+                    )
+                ]))
+            ], fluid=True)
+        ]),
+
+        dbc.Tab(label="Carbon Credits", children=[
+            dbc.Container([
+                html.H3("Carbon Credit Screener", className="mt-3"),
+                dbc.Row(dbc.Col(dcc.Slider(id='carbon-fit-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
+                dbc.Row(dbc.Col([
+                    html.H4("Matching Candidates"),
+                    dash_table.DataTable(
+                        id='carbon-table',
+                        columns=[
+                            {'name': 'Symbol', 'id': 'symbol'},
+                            {'name': 'Asset Class', 'id': 'asset_class'},
+                            {'name': 'AI Fit Score', 'id': 'fit_score'},
+                            {'name': 'Predictability', 'id': 'predictability_score'},
+                            {'name': 'Recorded At', 'id': 'recorded_at'},
+                            {'name': 'AI Rationale', 'id': 'rationale'},
+                        ],
+                        page_size=15, sort_action='native', filter_action='native',
+                        style_cell={'textAlign': 'left'}, style_header={'fontWeight': 'bold'},
+                        style_table={'overflowX': 'auto', 'maxHeight': '500px', 'overflowY': 'auto'},
+                        style_cell_conditional=[{'if': {'column_id': 'rationale'}, 'whiteSpace': 'pre-line'}]
+                    )
+                ]))
+            ], fluid=True)
+        ]),
+
+        dbc.Tab(label="Green Bonds", children=[
+            dbc.Container([
+                html.H3("Green Bond Screener", className="mt-3"),
+                dbc.Row(dbc.Col(dcc.Slider(id='green-fit-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
+                dbc.Row(dbc.Col([
+                    html.H4("Matching Candidates"),
+                    dash_table.DataTable(
+                        id='green-table',
+                        columns=[
+                            {'name': 'Symbol', 'id': 'symbol'},
+                            {'name': 'Asset Class', 'id': 'asset_class'},
+                            {'name': 'AI Fit Score', 'id': 'fit_score'},
+                            {'name': 'Predictability', 'id': 'predictability_score'},
+                            {'name': 'Duration', 'id': 'bond_duration'},
+                            {'name': 'Recorded At', 'id': 'recorded_at'},
+                            {'name': 'AI Rationale', 'id': 'rationale'},
+                        ],
+                        page_size=15, sort_action='native', filter_action='native',
+                        style_cell={'textAlign': 'left'}, style_header={'fontWeight': 'bold'},
+                        style_table={'overflowX': 'auto', 'maxHeight': '500px', 'overflowY': 'auto'},
+                        style_cell_conditional=[{'if': {'column_id': 'rationale'}, 'whiteSpace': 'pre-line'}]
                     )
                 ]))
             ], fluid=True)
@@ -157,6 +246,39 @@ def update_pca_charts(n):
 )
 def update_candidates_table(min_fit_score):
     df = load_candidates_from_db()
+    if df.empty:
+        return []
+    filtered_df = df[df['fit_score'] >= min_fit_score]
+    return filtered_df.to_dict('records')
+
+@app.callback(
+    Output('currency-table', 'data'),
+    Input('currency-fit-slider', 'value')
+)
+def update_currency_table(min_fit_score):
+    df = load_candidates_from_db('currency')
+    if df.empty:
+        return []
+    filtered_df = df[df['fit_score'] >= min_fit_score]
+    return filtered_df.to_dict('records')
+
+@app.callback(
+    Output('carbon-table', 'data'),
+    Input('carbon-fit-slider', 'value')
+)
+def update_carbon_table(min_fit_score):
+    df = load_candidates_from_db('carbon_credit')
+    if df.empty:
+        return []
+    filtered_df = df[df['fit_score'] >= min_fit_score]
+    return filtered_df.to_dict('records')
+
+@app.callback(
+    Output('green-table', 'data'),
+    Input('green-fit-slider', 'value')
+)
+def update_green_table(min_fit_score):
+    df = load_candidates_from_db('green_bond')
     if df.empty:
         return []
     filtered_df = df[df['fit_score'] >= min_fit_score]
