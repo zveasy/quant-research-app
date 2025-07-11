@@ -11,7 +11,15 @@ from factors.value import get_price_to_book
 from factors.momentum import get_12m_momentum
 from factors.quality import get_debt_to_equity, get_return_on_equity
 from factors.volatility import get_annualized_volatility
-from alt_data.trends import get_google_trends_score  # <--- NEW IMPORT
+from alt_data.trends import get_google_trends_score
+from universe_scouter.explorers import EquityExplorer
+from universe_scouter.currency_explorer import get_assets as get_currency_assets
+from universe_scouter.carbon_credit_explorer import (
+    get_assets as get_carbon_credit_assets,
+)
+from universe_scouter.green_bond_explorer import (
+    get_assets as get_green_bond_assets,
+)
 
 # Read the database path from the environment with a sensible default
 DB_FILE = os.getenv("DB_PATH", "./asset_universe.duckdb")
@@ -35,7 +43,24 @@ def save_candidates_to_db(candidates: list[dict]):
 if __name__ == "__main__":
     print("🚀 Starting Universe Scout pipeline with REAL enrichers...")
 
-    discovered_assets = [{"symbol": "MSFT"}, {"symbol": "GOOG"}, {"symbol": "JPM"}]
+    explorer = EquityExplorer()
+    equity_df = explorer.get_top_gainers(limit=25)
+    equity_df["asset_class"] = "equity"
+
+    currency_df = get_currency_assets()
+    currency_df["asset_class"] = "currency"
+
+    carbon_df = get_carbon_credit_assets()
+    carbon_df["asset_class"] = "carbon_credit"
+
+    green_df = get_green_bond_assets()
+    green_df["asset_class"] = "green_bond"
+
+    discovery_df = pd.concat(
+        [equity_df, currency_df, carbon_df, green_df], ignore_index=True
+    )
+    discovered_assets = discovery_df.to_dict("records")
+
     print(
         f"   - Starting with {len(discovered_assets)} assets: {[a['symbol'] for a in discovered_assets]}"
     )
