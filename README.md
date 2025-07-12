@@ -18,6 +18,7 @@ This project is an end-to-end pipeline for discovering, enriching, and ranking f
     4.  **Carbon Credits**: Explore carbon credit opportunities.
     5.  **Green Bonds**: Browse green bond issuances with duration info.
 - **CI/CD Ready**: Includes a GitHub Actions workflow to automatically run tests on every push, ensuring code quality and stability.
+- **Fed Rate Tracking**: Pulls the latest Federal Funds Rate from FRED and records monthly changes to gauge borrowing conditions.
 
 ---
 
