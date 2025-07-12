@@ -11,6 +11,7 @@ This project is an end-to-end pipeline for discovering, enriching, and ranking f
 - **AI Asset Scoring**: Uses an AI agent (in developer mode) to provide a "Fit Score" and rationale for each asset's suitability.
 - **Supply Chain Explorer**: Suggests supplier stocks for major tech companies like Nvidia or Apple.
 - **Data Lake Storage**: Saves enriched asset data to fast Parquet files and logs metadata in a DuckDB database for quick queries.
+- **SEC Filing Summaries**: Fetches the latest filings and uses GPT-4o to summarize risks.
 - **Interactive Dashboard**: A multi-tab Dash application for:
     1.  **PCA Factor Analysis**: Visualize latent factors across a basket of stocks.
     2.  **Equities Scout**: Review the AI-scored equity candidates.
