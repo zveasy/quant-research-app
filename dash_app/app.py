@@ -82,6 +82,10 @@ def load_candidates_from_db(asset_class: str | None = None):
             df['fx_carry'] = df['fx_carry'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         if 'bond_duration' in df.columns:
             df['bond_duration'] = df['bond_duration'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+        if 'fed_funds_rate' in df.columns:
+            df['fed_funds_rate'] = df['fed_funds_rate'].apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
+        if 'fed_funds_rate_change' in df.columns:
+            df['fed_funds_rate_change'] = df['fed_funds_rate_change'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
 
         return df
     except Exception as e:
@@ -133,6 +137,8 @@ app.layout = dbc.Container([
                             {'name': 'Google Trends', 'id': 'google_trends_score'},
                             {'name': 'FX Carry', 'id': 'fx_carry'},
                             {'name': 'Duration', 'id': 'bond_duration'},
+                            {'name': 'Fed Funds Rate', 'id': 'fed_funds_rate'},
+                            {'name': 'Rate Change (30d)', 'id': 'fed_funds_rate_change'},
                             {'name': 'Recorded At', 'id': 'recorded_at'},
                             {'name': 'AI Rationale', 'id': 'rationale'},
                         ],
@@ -159,6 +165,8 @@ app.layout = dbc.Container([
                             {'name': 'AI Fit Score', 'id': 'fit_score'},
                             {'name': 'Predictability', 'id': 'predictability_score'},
                             {'name': 'FX Carry', 'id': 'fx_carry'},
+                            {'name': 'Fed Funds Rate', 'id': 'fed_funds_rate'},
+                            {'name': 'Rate Change (30d)', 'id': 'fed_funds_rate_change'},
                             {'name': 'Recorded At', 'id': 'recorded_at'},
                             {'name': 'AI Rationale', 'id': 'rationale'},
                         ],
