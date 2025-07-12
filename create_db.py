@@ -12,6 +12,7 @@ from factors.momentum import get_12m_momentum
 from factors.quality import get_debt_to_equity, get_return_on_equity
 from factors.volatility import get_annualized_volatility
 from alt_data.trends import get_google_trends_score
+from factors.fed_rates import get_fed_funds_rate, get_fed_funds_rate_change
 from universe_scouter.explorers import EquityExplorer
 from universe_scouter.currency_explorer import get_assets as get_currency_assets
 from universe_scouter.carbon_credit_explorer import (
@@ -70,6 +71,10 @@ if __name__ == "__main__":
     )
     discovered_assets = discovery_df.to_dict("records")
 
+    # Fetch macro factors once
+    fed_rate = get_fed_funds_rate()
+    fed_change = get_fed_funds_rate_change()
+
     print(
         f"   - Starting with {len(discovered_assets)} assets: {[a['symbol'] for a in discovered_assets]}"
     )
@@ -93,6 +98,10 @@ if __name__ == "__main__":
             print(f"   - Google Trends Score for {asset['symbol']}: {trends_score:.2%}")
         else:
             print(f"   - Google Trends Score for {asset['symbol']}: Not Available")
+        if pd.notna(fed_rate):
+            print(f"   - Fed Funds Rate: {fed_rate:.2f}%")
+        if pd.notna(fed_change):
+            print(f"   - 30d Rate Change: {fed_change:.2f}")
         # ----------------------------
 
         if predict_score is not None and np.isfinite(predict_score):
@@ -104,6 +113,8 @@ if __name__ == "__main__":
             asset["return_on_equity"] = roe
             asset["annualized_volatility"] = ann_vol
             asset["google_trends_score"] = trends_score  # Add the new trends score
+            asset["fed_funds_rate"] = fed_rate
+            asset["fed_funds_rate_change"] = fed_change
 
             # Get the AI score and add it to the final record
             ai_result = get_ai_fit_score(asset["symbol"], asset, dev_mode=True)

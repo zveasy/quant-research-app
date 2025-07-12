@@ -11,6 +11,7 @@ from factors.momentum import get_12m_momentum
 from factors.volatility import get_annualized_volatility
 from factors.fx_carry import get_fx_carry
 from factors.bond_duration import get_bond_duration
+from factors.fed_rates import get_fed_funds_rate, get_fed_funds_rate_change
 
 # --- Test Data ---
 # A list of symbols to test against. One likely to work, one likely to fail.
@@ -86,3 +87,19 @@ def test_bond_duration():
     check_factor_output(value)
 
     assert pd.isna(get_bond_duration(INVALID_BOND))
+
+
+def test_fed_funds_rate():
+    """Tests fetching the Fed Funds rate."""
+    value = get_fed_funds_rate()
+    if pd.isna(value):
+        pytest.skip("Fed funds data unavailable")
+    check_factor_output(value)
+
+
+def test_fed_funds_rate_change():
+    """Tests the change in the Fed Funds rate."""
+    value = get_fed_funds_rate_change()
+    if pd.isna(value):
+        pytest.skip("Fed funds trend data unavailable")
+    assert isinstance(value, (float, np.floating))
