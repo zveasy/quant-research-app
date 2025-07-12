@@ -20,6 +20,7 @@ from universe_scouter.carbon_credit_explorer import (
 from universe_scouter.green_bond_explorer import (
     get_assets as get_green_bond_assets,
 )
+from universe_scouter.supplier_explorer import get_suppliers
 
 # Read the database path from the environment with a sensible default
 DB_FILE = os.getenv("DB_PATH", "./asset_universe.duckdb")
@@ -60,8 +61,12 @@ if __name__ == "__main__":
     green_df = get_green_bond_assets()
     green_df["asset_class"] = "green_bond"
 
+    # New: include suppliers of major tech companies for a broader search
+    supplier_df = get_suppliers(["NVDA", "AAPL"])
+    supplier_df["asset_class"] = "supplier"
+
     discovery_df = pd.concat(
-        [equity_df, currency_df, carbon_df, green_df], ignore_index=True
+        [equity_df, currency_df, carbon_df, green_df, supplier_df], ignore_index=True
     )
     discovered_assets = discovery_df.to_dict("records")
 
