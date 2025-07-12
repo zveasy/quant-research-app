@@ -19,6 +19,7 @@ This project is an end-to-end pipeline for discovering, enriching, and ranking f
     4.  **Carbon Credits**: Explore carbon credit opportunities.
     5.  **Green Bonds**: Browse green bond issuances with duration info.
 - **CI/CD Ready**: Includes a GitHub Actions workflow to automatically run tests on every push, ensuring code quality and stability.
+- **Legislation Insights**: Fetches recent bills and uses GPT-4o to summarize potential market impact.
 - **Fed Rate Tracking**: Pulls the latest Federal Funds Rate from FRED and records monthly changes to gauge borrowing conditions.
 
 ---
@@ -38,6 +39,8 @@ jv-quant-research/
 │   ├── ai_agent.py
 │   ├── enrichers.py
 │   └── storage.py
+├── political/                 # Tools for legislation analysis
+│   └── legislation.py
 ├── tests/                     # PyTest suite
 │   └── test_pipeline.py
 ├── create_db.py               # Main script to run the data pipeline

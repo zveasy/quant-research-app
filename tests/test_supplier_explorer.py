@@ -1,5 +1,4 @@
 from universe_scouter.supplier_explorer import get_suppliers
-import pandas as pd
 
 
 def test_get_suppliers():
