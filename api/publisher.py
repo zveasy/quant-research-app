@@ -52,8 +52,8 @@ def run_publisher():
                 print("No data to broadcast. Will try again in 60 seconds.")
 
             # 3. Wait before broadcasting again
-            # In a real system, this would be triggered by the pipeline finishing
-            time.sleep(60)
+            # Sub-millisecond interval (0.5 ms)
+            time.sleep(0.0005)
 
     except KeyboardInterrupt:
         print("\nPublisher shutting down.")
