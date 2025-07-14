@@ -21,8 +21,7 @@ This project is an end-to-end pipeline for discovering, enriching, and ranking f
 - **CI/CD Ready**: Includes a GitHub Actions workflow to automatically run tests on every push, ensuring code quality and stability.
 - **Legislation Insights**: Fetches recent bills and uses GPT-4o to summarize potential market impact.
 - **Fed Rate Tracking**: Pulls the latest Federal Funds Rate from FRED and records monthly changes to gauge borrowing conditions.
-- **Option Pricing Model**: Provides a Black-Scholes implementation for pricing European call and put options.
-
+- **Option Pricing Model**: Provides Black-Scholes pricing, Greeks, and implied volatility for European options.
 ---
 
 ## 📁 Project Structure

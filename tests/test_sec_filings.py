@@ -1,7 +1,3 @@
-import json
-from types import SimpleNamespace
-
-import pytest
 
 from alt_data.sec_filings import fetch_latest_filing_text
 
