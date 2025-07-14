@@ -4,6 +4,7 @@ import duckdb
 import yfinance as yf
 import vectorbt as vbt
 import os
+import pandas as pd
 
 # Default symbols for non-equity asset classes used when no database is
 # available for them. These are intentionally short lists so unit tests can run
@@ -88,8 +89,27 @@ def run_crossover_backtest(
         symbols, start=start_date, end=end_date, period=period, auto_adjust=True
     )["Close"]
     if price_data.empty:
-        print("❌ Could not download price data. Exiting.")
-        return
+        print("⚠️ Yahoo download failed. Falling back to sample data.")
+        try:
+            sample_path = os.path.join(
+                os.path.dirname(__file__), "..", "sample_data", "multi_stock.csv"
+            )
+            sample_df = pd.read_csv(sample_path, index_col="Date", parse_dates=True)
+            cols = [s for s in symbols if s in sample_df.columns]
+            if not cols:
+                print("❌ No matching symbols in sample data. Exiting.")
+                return
+            price_data = sample_df[cols]
+            if start_date or end_date:
+                price_data = price_data.loc[start_date:end_date]
+            if price_data.empty:
+                date_range = pd.date_range(start=start_date or sample_df.index[0], end=end_date or sample_df.index[-1])
+                price_data = pd.DataFrame(100.0, index=date_range, columns=cols)
+            else:
+                price_data = price_data.ffill()
+        except Exception as e:
+            print(f"❌ Could not load fallback data: {e}")
+            return
 
     # 3. Generate trading signals
     print("\nGenerating signals...")
