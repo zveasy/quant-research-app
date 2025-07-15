@@ -25,7 +25,7 @@ def get_latest_candidates_as_json():
         return None
 
 
-def run_publisher():
+def run_publisher(stop_event=None, run_once: bool = False):
     """
     Initializes a ZMQ publisher and periodically broadcasts the latest
     asset universe on a specific topic.
@@ -53,6 +53,10 @@ def run_publisher():
 
             # 3. Wait before broadcasting again
             # Sub-millisecond interval (0.5 ms)
+            if run_once:
+                break
+            if stop_event and stop_event.is_set():
+                break
             time.sleep(0.0005)
 
     except KeyboardInterrupt:

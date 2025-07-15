@@ -1,6 +1,6 @@
 # In: factors/volatility.py
 
-import yfinance as yf
+from data_prep.yfinance_utils import yf_download_retry
 import numpy as np
 import pandas as pd
 
@@ -17,8 +17,8 @@ def get_annualized_volatility(symbol: str) -> float:
         float: The annualized volatility, or np.nan if data is insufficient.
     """
     try:
-        # Download one year of daily price data
-        stock_data = yf.download(symbol, period="1y", progress=False, auto_adjust=True)
+        # Download one year of daily price data with basic retry logic
+        stock_data = yf_download_retry(symbol, period="1y", auto_adjust=True)
 
         if len(stock_data) < 250:
             return np.nan

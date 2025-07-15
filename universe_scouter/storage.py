@@ -33,8 +33,11 @@ def save_candidates(candidates: list[dict]):
     os.makedirs(output_dir, exist_ok=True)
     timestamp_str = datetime.now().strftime("%H%M%S")
     file_path = os.path.join(output_dir, f"candidates_{timestamp_str}.parquet")
-    df.to_parquet(file_path, index=False)
-    print(f"✅ Successfully saved {len(df)} candidates to {file_path}")
+    try:
+        df.to_parquet(file_path, index=False)
+        print(f"✅ Successfully saved {len(df)} candidates to {file_path}")
+    except Exception as e:
+        print(f"❌ Failed to write Parquet file: {e}")
 
     # --- Save to DuckDB while preserving existing data ---
     con = duckdb.connect(database="asset_universe.duckdb", read_only=False)
