@@ -1,0 +1,29 @@
+@startuml
+!define RECTANGLE class
+RECTANGLE "create_db.py" as CreateDB
+RECTANGLE "feature_store.py" as FeatureStore
+RECTANGLE "option_pricing/black_scholes.py" as BlackScholes
+RECTANGLE "api/publisher.py" as Publisher
+RECTANGLE "dash_app/app.py" as DashApp
+RECTANGLE "streamlit_portal/portal.py" as StreamlitPortal
+RECTANGLE "realtime_service/service.py" as RealtimeService
+RECTANGLE "factors/*" as Factors
+RECTANGLE "risk/stress.py" as Stress
+RECTANGLE "alt_data/*" as AltData
+RECTANGLE "data_prep/yfinance_utils.py" as YFinanceUtils
+RECTANGLE "asset_universe.duckdb" as DuckDB
+
+CreateDB --> DuckDB : populates
+FeatureStore --> DuckDB : stores features
+Factors --> DuckDB : enriches data
+AltData --> DuckDB : alternative data
+YFinanceUtils --> CreateDB : provides data
+Publisher --> DuckDB : reads/broadcasts
+Publisher --> QuantEngine : ZMQ
+DashApp --> DuckDB : visualizes
+StreamlitPortal --> DuckDB : explores features
+RealtimeService --> DuckDB : live data
+Stress --> DuckDB : stress tests
+BlackScholes --> DashApp : analytics
+
+@enduml
