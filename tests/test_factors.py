@@ -12,6 +12,7 @@ from factors.volatility import get_annualized_volatility
 from factors.fx_carry import get_fx_carry
 from factors.bond_duration import get_bond_duration
 from factors.fed_rates import get_fed_funds_rate, get_fed_funds_rate_change
+from factors.dividend_yield import get_dividend_yield
 
 # --- Test Data ---
 # A list of symbols to test against. One likely to work, one likely to fail.
@@ -55,6 +56,12 @@ def test_return_on_equity():
     """Tests the Return on Equity quality factor."""
     check_factor_output(get_return_on_equity(VALID_SYMBOL))
     assert pd.isna(get_return_on_equity(INVALID_SYMBOL))
+
+
+def test_dividend_yield():
+    """Tests the Dividend Yield factor."""
+    check_factor_output(get_dividend_yield(VALID_SYMBOL))
+    assert pd.isna(get_dividend_yield(INVALID_SYMBOL))
 
 
 def test_12m_momentum():

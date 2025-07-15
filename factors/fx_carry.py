@@ -2,7 +2,7 @@
 """Functions to compute FX carry metrics."""
 
 import numpy as np
-import yfinance as yf
+from data_prep.yfinance_utils import yf_download_retry
 
 # Mapping from currency codes to FRED tickers for short-term interest rates
 # We use 3-month interbank or treasury rates where available.
@@ -37,8 +37,8 @@ def get_fx_carry(base_currency: str, quote_currency: str) -> float:
         return np.nan
 
     try:
-        base_data = yf.download(base_ticker, period="5d", progress=False)
-        quote_data = yf.download(quote_ticker, period="5d", progress=False)
+        base_data = yf_download_retry(base_ticker, period="5d")
+        quote_data = yf_download_retry(quote_ticker, period="5d")
 
         if base_data.empty or quote_data.empty:
             return np.nan

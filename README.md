@@ -7,7 +7,7 @@ This project is an end-to-end pipeline for discovering, enriching, and ranking f
 ## ✨ Features
 
 - **Automated Pipeline**: A command-line script (`create_db.py`) that runs the entire data workflow.
-- **Factor Library**: A modular system for calculating quantitative factors like Value (Price-to-Book) and Momentum.
+- **Factor Library**: A modular system for calculating quantitative factors like Value (Price-to-Book), Momentum, and Dividend Yield.
 - **AI Asset Scoring**: Uses an AI agent (in developer mode) to provide a "Fit Score" and rationale for each asset's suitability.
 - **Supply Chain Explorer**: Suggests supplier stocks for major tech companies like Nvidia or Apple.
 - **Data Lake Storage**: Saves enriched asset data to fast Parquet files and logs metadata in a DuckDB database for quick queries.

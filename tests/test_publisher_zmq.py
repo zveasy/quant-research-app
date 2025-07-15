@@ -13,8 +13,12 @@ TOPIC = "UNIVERSE_TODAY"
 
 # Helper: Run the publisher in a thread so we can subscribe to it
 class PublisherThread(threading.Thread):
+    def __init__(self, stop_event):
+        super().__init__()
+        self.stop_event = stop_event
+
     def run(self):
-        publisher.run_publisher()
+        publisher.run_publisher(stop_event=self.stop_event)
 
 # Test ZMQ subscriber
 def test_zmq_publisher_broadcast(monkeypatch):
@@ -22,7 +26,8 @@ def test_zmq_publisher_broadcast(monkeypatch):
     monkeypatch.setattr(publisher, "get_latest_candidates_as_json", lambda: json.dumps([{"ticker": "AAPL", "price": 200.12}]))
 
     # Start publisher in a background thread
-    pub_thread = PublisherThread()
+    stop_event = threading.Event()
+    pub_thread = PublisherThread(stop_event)
     pub_thread.daemon = True
     pub_thread.start()
     time.sleep(1)  # Give publisher time to start
@@ -52,4 +57,5 @@ def test_zmq_publisher_broadcast(monkeypatch):
 
     socket.close()
     context.term()
-    # Publisher thread will exit on KeyboardInterrupt or test teardown
+    stop_event.set()
+    pub_thread.join(timeout=1)

@@ -8,6 +8,16 @@ from dotenv import load_dotenv
 # Load API key from .env file
 load_dotenv()
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+LOG_FILE = os.getenv("AI_LOG_PATH", "ai_logs.jsonl")
+
+
+def _log_interaction(payload: str, response: dict) -> None:
+    """Append the prompt and response to a JSONL log file."""
+    try:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"payload": payload, "response": response}) + "\n")
+    except Exception:
+        pass
 
 
 def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -> dict:
@@ -32,7 +42,7 @@ def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -
     if dev_mode:
         print(f"   - DEV MODE: Faking AI score for {symbol}.")
         # The fake response can now be more detailed, as if it read the summary
-        return {
+        result = {
             "fit_score": 88,
             "rationale": [
                 f"Strong momentum ({enriched_data.get('momentum_12m', 0)*100:.2f}%) and high ROE suggest robust performance.",
@@ -41,6 +51,8 @@ def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -
             ],
             "confidence": "high",
         }
+        _log_interaction(summary, result)
+        return result
     # --- END DEV MODE ---
 
     print(f"\n--- Requesting AI Fit Score for {symbol} ---")
@@ -61,6 +73,7 @@ def get_ai_fit_score(symbol: str, enriched_data: dict, dev_mode: bool = False) -
             temperature=0.2,
         )
         ai_response = json.loads(response.choices[0].message.content)
+        _log_interaction(summary, ai_response)
         return ai_response
 
     except Exception as e:
