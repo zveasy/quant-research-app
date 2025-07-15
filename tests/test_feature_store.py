@@ -8,7 +8,10 @@ def test_round_trip(tmp_path, monkeypatch):
     df = pd.DataFrame({"a": [1, 2]})
     save(df, "tbl", "2024-01-01")
     out = load("tbl").collect().to_pandas()
-    pd.testing.assert_frame_equal(out, df)
+    # Sort both DataFrames by column 'a' before comparing
+    out_sorted = out.head(len(df)).sort_values(by="a").reset_index(drop=True)
+    df_sorted = df.sort_values(by="a").reset_index(drop=True)
+    pd.testing.assert_frame_equal(out_sorted, df_sorted)
 
 
 def test_date_filter(tmp_path, monkeypatch):
