@@ -1,0 +1,7 @@
+experiments:
+  - type: latency
+    target: payment-api
+    duration: 60
+  - type: pod_kill
+    target: matcher
+    duration: 30
