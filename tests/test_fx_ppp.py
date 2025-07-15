@@ -15,4 +15,4 @@ def test_ppp_deviation_basic():
     })
     result = ppp_deviation(df_fx, df_cpi)
     assert result.shape == (2, 3)
-    assert result['ppp_dev_pct'].iloc[0] == 10.0
+    assert result['ppp_dev_pct'].iloc[0] == pytest.approx(10.0, rel=1e-9)
