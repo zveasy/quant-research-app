@@ -61,15 +61,21 @@ First, create and activate a Python virtual environment.
 
 ```bash
 # Create the environment
-python3 -m venv .venv
+python3.11 -m venv .venv
 
 # Activate it (macOS/Linux)
 source .venv/bin/activate
 
+# Activate it (Windows)
+.venv\Scripts\activate
+```
+
 2. Install Dependencies
 Install all required packages from the requirements.txt file.
 
+```bash
 pip install -r requirements.txt
+```
 
 3. Set Up Environment Variables
 Create a `.env` file in the project root by copying the example file.
