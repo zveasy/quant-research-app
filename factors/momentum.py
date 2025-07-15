@@ -5,6 +5,65 @@ import numpy as np
 import pandas as pd
 
 
+def compute_momentum(df: pd.DataFrame, lookback: int = 252) -> pd.DataFrame:
+    """Compute cross-sectional 12-1 month momentum.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame of close prices indexed by date where each column is a symbol.
+    lookback : int, default ``252``
+        Look-back window in trading days.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Tidy DataFrame with columns ``date``, ``symbol`` and ``momentum_z``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> dates = pd.date_range('2020-01-01', periods=40)
+    >>> prices = pd.DataFrame({'AAA': np.arange(40),
+    ...                       'BBB': np.linspace(10, 20, 40)}, index=dates)
+    >>> res = compute_momentum(prices, lookback=5)
+    >>> set(res.columns)
+    {'date', 'symbol', 'momentum_z'}
+    """
+
+    if isinstance(df.columns, pd.MultiIndex):
+        col_levels = df.columns.get_level_values
+        if "close" in col_levels(0):
+            close = df.xs("close", level=0, axis=1)
+        elif "close" in col_levels(-1):
+            close = df.xs("close", level=-1, axis=1)
+        else:
+            raise KeyError("'close' column not found")
+    else:
+        close = df
+
+    skip = 21
+    look = lookback + skip
+    returns = close.shift(skip) / close.shift(look) - 1
+    returns = returns.dropna(how="all")
+
+    ranks = returns.rank(axis=1, method="average")
+    mean = ranks.mean(axis=1)
+    std = ranks.std(axis=1, ddof=0)
+    zscores = ranks.sub(mean, axis=0).div(std, axis=0)
+
+    result = (
+        zscores.stack()
+        .rename("momentum_z")
+        .reset_index()
+        .rename(columns={"level_0": "date", "level_1": "symbol"})
+        .dropna()
+    )
+
+    return result
+
+
 def get_12m_momentum(symbol: str) -> float:
     """
     Calculates the 12-month price momentum for a given stock symbol.
