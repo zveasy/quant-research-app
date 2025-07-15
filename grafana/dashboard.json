@@ -1,0 +1,15 @@
+{
+  "title": "Quant API SLO",
+  "templating": {
+    "list": [
+      {"name": "service", "type": "query", "query": "label_values(job)"},
+      {"name": "environment", "type": "query", "query": "label_values(environment)"}
+    ]
+  },
+  "rows": [
+    {"title": "Latency Histogram", "panels": [{"type": "histogram", "targets": [{"expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"$service\"}[5m])) by (le))"}]}]},
+    {"title": "Error Budget", "panels": [{"type": "graph", "targets": [{"expr": "1 - job:quant_api:availability"}]}]},
+    {"title": "QPS", "panels": [{"type": "graph", "targets": [{"expr": "rate(http_requests_total{job=\"$service\"}[1m])"}]}]},
+    {"title": "Infrastructure", "panels": [{"type": "nodeGraph", "targets": []}]}
+  ]
+}

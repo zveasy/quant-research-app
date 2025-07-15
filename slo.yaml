@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: quant-api-slo
+spec:
+  groups:
+  - name: quant-api-slo
+    rules:
+    - record: job:quant_api:p95_latency_seconds
+      expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="quant-api"}[5m])) by (le))
+    - record: job:quant_api:availability
+      expr: sum(rate(http_requests_total{job="quant-api",status!~"5.."}[5m])) / sum(rate(http_requests_total{job="quant-api"}[5m]))
+    - alert: QuantApiErrorBudgetBurn
+      expr: (1 - job:quant_api:availability) > (0.02/60) # 2% per hour
+      for: 5m
+      labels:
+        severity: page
+      annotations:
+        summary: "quant-api error budget burn"
+        pagerduty: "true"
