@@ -151,3 +151,4 @@ zipp==3.22.0
 polars==0.20.16
 redis-async==1.4.0
 Authlib==1.6.0
+vcrpy==6.0.1

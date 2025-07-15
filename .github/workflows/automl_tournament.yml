@@ -1,0 +1,29 @@
+name: AutoML Tournament
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  tournament:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t automl-pipeline .
+      - name: Run pipeline
+        env:
+          FEATURES_PATH: ${{ secrets.FEATURES_PATH }}
+          OUTPUT_BUCKET: ${{ secrets.OUTPUT_BUCKET }}
+        run: docker run -e FEATURES_PATH -e OUTPUT_BUCKET automl-pipeline python automl/pipeline.py
+      - name: Check metrics
+        id: metrics
+        run: |
+          sharpe=$(cat mlruns/*/*/metrics/sharpe | tail -n1 | cut -f2 -d' ')
+          turnover=$(cat mlruns/*/*/metrics/turnover | tail -n1 | cut -f2 -d' ')
+          echo "sharpe=$sharpe" >> $GITHUB_OUTPUT
+          echo "turnover=$turnover" >> $GITHUB_OUTPUT
+      - name: Upload model
+        if: steps.metrics.outputs.sharpe > '1.2' && steps.metrics.outputs.turnover < '300'
+        run: echo "Uploading model"
