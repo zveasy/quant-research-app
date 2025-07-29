@@ -294,4 +294,5 @@ def update_green_table(min_fit_score):
 
 # --- Main Run Block ---
 if __name__ == '__main__':
-    app.run(debug=True)
+    # When running inside Docker we need to listen on all interfaces so the host can access it
+    app.run(host="0.0.0.0", port=8050, debug=False)

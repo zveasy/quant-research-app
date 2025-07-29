@@ -106,7 +106,7 @@ The dashboard will be available at http://127.0.0.1:8050.
 To verify that all components are working as expected, run the pytest suite.
 
 # This command will automatically discover and run all tests
-pytest
+PYTHONPATH=$(pwd) pytest
 
 ## 📸 Example Screenshots
 

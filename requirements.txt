@@ -73,8 +73,8 @@ multitasking==0.0.11
 mypy_extensions==1.1.0
 narwhals==1.41.1
 nest-asyncio==1.6.0
-numba==0.58.0
-numpy==1.23.5
+# numba==0.58.0  # Incompatible with Python 3.12.x, comment out or downgrade Python
+numpy>=1.26.0  # Updated for Python 3.12 compatibility
 openai==1.86.0
 openpyxl==3.1.5
 orderly-set==5.4.1
@@ -137,7 +137,7 @@ url-normalize==1.4.3
 urllib3==2.4.0
 uuid7==0.1.0
 uvicorn==0.34.3
-vectorbt==0.27.3
+vectorbt
 wcwidth==0.2.13
 webencodings==0.5.1
 websockets==15.0.1
@@ -151,3 +151,7 @@ zipp==3.22.0
 polars==0.20.16
 Authlib==1.6.0
 vcrpy==6.0.1
+moto
+sqlmodel
+gymnasium
+xgboost
