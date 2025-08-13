@@ -1,0 +1,5 @@
+latency_ms,spread_bps,is_bps
+100,5,4.25
+250,8,8.4
+50,3,2.85
+
