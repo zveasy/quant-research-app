@@ -47,3 +47,7 @@ jobs:
           cmake -S cpp -B build
           ctest --test-dir build -j2 --output-on-failure
 
+      # --- SPA Reality-Check ---
+      - name: SPA reality-check
+        run: python -m research.spa --input backtests/sample.parquet
+
