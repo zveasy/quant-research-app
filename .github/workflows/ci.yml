@@ -51,3 +51,11 @@ jobs:
       - name: SPA reality-check
         run: python -m research.spa --input backtests/sample.parquet
 
+      # --- Capacity Curve ---
+      - name: Capacity curve generation
+        run: python -m research.capacity --fills data/sample_fills.parquet
+
+      # --- Bad Tick Filter ---
+      - name: Bad-tick quality gate
+        run: python -m data.bad_tick_filter --prices data/sample_ticks.parquet
+
