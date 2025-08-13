@@ -119,7 +119,7 @@ app.layout = dbc.Container([
         dbc.Tab(label="Universe Scout", children=[
             dbc.Container([
                 html.H3("AI Asset Screener", className="mt-3"),
-                dbc.Row(dbc.Col(dcc.Slider(id='fit-score-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
+                dbc.Row(dbc.Col(dcc.Slider(id='fit-score-slider', min=0.0, max=1.0, step=0.05, value=0.2, marks={round(i/10, 1): f"{i/10:.1f}" for i in range(0, 11)}))),
                 dbc.Row(dbc.Col([
                     html.H4("Matching Candidates"),
                     dash_table.DataTable(
@@ -154,7 +154,7 @@ app.layout = dbc.Container([
         dbc.Tab(label="Currencies", children=[
             dbc.Container([
                 html.H3("Currency Screener", className="mt-3"),
-                dbc.Row(dbc.Col(dcc.Slider(id='currency-fit-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
+                dbc.Row(dbc.Col(dcc.Slider(id='currency-fit-slider', min=0.0, max=1.0, step=0.05, value=0.2, marks={round(i/10, 1): f"{i/10:.1f}" for i in range(0, 11)}))),
                 dbc.Row(dbc.Col([
                     html.H4("Matching Candidates"),
                     dash_table.DataTable(
@@ -182,7 +182,7 @@ app.layout = dbc.Container([
         dbc.Tab(label="Carbon Credits", children=[
             dbc.Container([
                 html.H3("Carbon Credit Screener", className="mt-3"),
-                dbc.Row(dbc.Col(dcc.Slider(id='carbon-fit-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
+                dbc.Row(dbc.Col(dcc.Slider(id='carbon-fit-slider', min=0.0, max=1.0, step=0.05, value=0.2, marks={round(i/10, 1): f"{i/10:.1f}" for i in range(0, 11)}))),
                 dbc.Row(dbc.Col([
                     html.H4("Matching Candidates"),
                     dash_table.DataTable(
@@ -207,7 +207,7 @@ app.layout = dbc.Container([
         dbc.Tab(label="Green Bonds", children=[
             dbc.Container([
                 html.H3("Green Bond Screener", className="mt-3"),
-                dbc.Row(dbc.Col(dcc.Slider(id='green-fit-slider', min=0, max=100, step=5, value=70, marks={i: str(i) for i in range(0, 101, 10)}))),
+                dbc.Row(dbc.Col(dcc.Slider(id='green-fit-slider', min=0.0, max=1.0, step=0.05, value=0.2, marks={round(i/10, 1): f"{i/10:.1f}" for i in range(0, 11)}))),
                 dbc.Row(dbc.Col([
                     html.H4("Matching Candidates"),
                     dash_table.DataTable(
@@ -264,10 +264,10 @@ def update_candidates_table(min_fit_score):
     Input('currency-fit-slider', 'value')
 )
 def update_currency_table(min_fit_score):
-    df = load_candidates_from_db('currency')
+    df = load_candidates_from_db()
     if df.empty:
         return []
-    filtered_df = df[df['fit_score'] >= min_fit_score]
+    filtered_df = df[(df['asset_class'] == 'currency') & (df['fit_score'] >= min_fit_score)]
     return filtered_df.to_dict('records')
 
 @app.callback(
@@ -275,10 +275,10 @@ def update_currency_table(min_fit_score):
     Input('carbon-fit-slider', 'value')
 )
 def update_carbon_table(min_fit_score):
-    df = load_candidates_from_db('carbon_credit')
+    df = load_candidates_from_db()
     if df.empty:
         return []
-    filtered_df = df[df['fit_score'] >= min_fit_score]
+    filtered_df = df[(df['asset_class'] == 'carbon_credit') & (df['fit_score'] >= min_fit_score)]
     return filtered_df.to_dict('records')
 
 @app.callback(
@@ -286,13 +286,15 @@ def update_carbon_table(min_fit_score):
     Input('green-fit-slider', 'value')
 )
 def update_green_table(min_fit_score):
-    df = load_candidates_from_db('green_bond')
+    df = load_candidates_from_db()
     if df.empty:
         return []
-    filtered_df = df[df['fit_score'] >= min_fit_score]
+    filtered_df = df[(df['asset_class'] == 'green_bond') & (df['fit_score'] >= min_fit_score)]
     return filtered_df.to_dict('records')
 
 # --- Main Run Block ---
 if __name__ == '__main__':
     # When running inside Docker we need to listen on all interfaces so the host can access it
-    app.run(host="0.0.0.0", port=8050, debug=False)
+    import os
+    port = int(os.getenv("PORT", 8050))
+    app.run(host="0.0.0.0", port=port, debug=False)

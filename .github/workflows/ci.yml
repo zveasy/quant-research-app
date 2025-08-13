@@ -41,3 +41,9 @@ jobs:
         run: |
           python -m pytest
 
+      # --- Add C++ unit tests ---
+      - name: Configure and run CTest
+        run: |
+          cmake -S cpp -B build
+          ctest --test-dir build -j2 --output-on-failure
+
