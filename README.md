@@ -55,6 +55,12 @@ jv-quant-research/
 
 ## 🚀 Getting Started
 
+### Docker Dev Container
+
+If you're using an editor like VS Code with the Dev Containers or GitHub Codespaces extension,
+simply open this project and the included configuration will automatically build and start the
+Docker environment. This ensures a consistent setup across different operating systems.
+
 ### 1. Setup Environment
 
 First, create and activate a Python virtual environment.
