@@ -1,0 +1,8 @@
+{
+  "name": "quant-research-app",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "dashboard",
+  "workspaceFolder": "/workspace/quant-research-app",
+  "forwardPorts": [8050],
+  "postCreateCommand": "pip install -r requirements.txt"
+}
