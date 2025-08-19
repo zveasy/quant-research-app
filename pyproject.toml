@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "equity-options-research"
+version = "0.1.0"
+description = "Research tools for equity options using the Polygon.io API"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas==2.2.2",
+    "numpy==1.26.4",
+    "requests==2.31.0",
+    "pydantic==1.10.13",
+    "scipy==1.11.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.2.2",
+    "ruff==0.3.7",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
