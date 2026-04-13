@@ -1,0 +1,1 @@
+"""Shared settings helpers placeholder."""

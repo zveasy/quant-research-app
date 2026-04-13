@@ -1,0 +1,1 @@
+"""Strategy quality evaluation placeholder."""
