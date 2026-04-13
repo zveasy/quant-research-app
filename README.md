@@ -121,3 +121,14 @@ Below are sample images of the new dashboard tabs.
 | Currencies | Carbon Credits | Green Bonds |
 |-----------|---------------|-------------|
 | ![Currencies](docs/screenshots/currencies.ppm) | ![Carbon Credits](docs/screenshots/carbon_credits.ppm) | ![Green Bonds](docs/screenshots/green_bonds.ppm) |
+
+
+## 🧩 New: VM-Ready OpenAI + QuantEngine Platform Scaffold
+
+A deployable mono-repo scaffold is now included at `quant-research-platform/` with:
+- FastAPI `agent-api` using OpenAI Responses API tool schemas
+- `worker` job runner skeleton
+- `quantengine-bridge` safety/export boundary
+- Docker Compose stack + GCP startup/create scripts
+
+See `quant-research-platform/README.md` for usage.
